@@ -2,10 +2,10 @@
 #include "../core/Component.hpp"
 #include <SFML/Graphics.hpp>
 
-struct Renderable : public Component {
+struct Renderable final : Component {
     sf::RectangleShape shape;
 
-    Renderable(
+    explicit Renderable(
         float w = 20,
         float h = 20
     ) {

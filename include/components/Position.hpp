@@ -3,12 +3,12 @@
 
 #include "../core/Component.hpp"
 
-struct Position : public Component {
+struct Position final : Component {
     sf::Vector2f value{0.f, 0.f};
 
-    Position(
-        float x = 0.f,
-        float y = 0.f
+    explicit Position(
+        const float x = 0.f,
+        const float y = 0.f
     ) : value(x, y) {
     }
 };

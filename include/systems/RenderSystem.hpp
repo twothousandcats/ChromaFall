@@ -7,7 +7,7 @@ class Entity;
 
 class RenderSystem {
 public:
-    void pollEvents(
+    static void pollEvents(
         sf::RenderWindow &window
     ) {
         while (const auto event = window.pollEvent()) {
@@ -17,12 +17,12 @@ public:
         }
     }
 
-    void update(
+    static void update(
     ) {
     }
 
-    void render(
+    static void render(
         sf::RenderWindow &window,
-        std::vector<std::unique_ptr<Entity> > &entities
+        const std::vector<std::unique_ptr<Entity> > &entities
     );
 };

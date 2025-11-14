@@ -11,8 +11,8 @@
 constexpr unsigned int WINDOW_WIDTH = 800;
 constexpr unsigned int WINDOW_HEIGHT = 600;
 
-GameStateManager::GameStateManager(sf::RenderWindow &win)
-    : window(win), currentState(GameState::MainMenu) {
+GameStateManager::GameStateManager(sf::RenderWindow &window)
+    : window(window) {
     menuButtonCenter = {WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f};
 }
 
@@ -30,8 +30,9 @@ void GameStateManager::switchToMainMenu() {
 void GameStateManager::switchToGameplay() {
     currentState = GameState::Gameplay;
 
+    // создаем MC
     auto player = std::make_unique<Entity>();
-    player->addComponent(std::make_unique<Position>(WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f));
+    player->addComponent(std::make_unique<Position>());
     player->addComponent(std::make_unique<Renderable>());
     entities.push_back(std::move(player));
 
@@ -40,7 +41,7 @@ void GameStateManager::switchToGameplay() {
 }
 
 void GameStateManager::handleEvents() {
-    while (auto event = window.pollEvent()) {
+    while (const auto event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
             window.close();
         } else if (event->is<sf::Event::KeyPressed>()) {
@@ -50,10 +51,9 @@ void GameStateManager::handleEvents() {
                     switchToGameplay();
                 }
             }
-        }
-        else if (currentState == GameState::MainMenu) {
+        } else if (currentState == GameState::MainMenu) {
             if (event->is<sf::Event::MouseButtonPressed>()) {
-                const auto& mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
+                const auto &mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
                 if (mouseEvent->button == sf::Mouse::Button::Left) {
                     // Получаем позицию мыши в координатах окна
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
@@ -73,13 +73,14 @@ void GameStateManager::handleEvents() {
     }
 }
 
-void GameStateManager::update() {
+void GameStateManager::update() const {
     if (currentState == GameState::Gameplay && !entities.empty()) {
-        playerControlSystem->update(*entities[0], window);
+        // передаем указатель MC в PlayerControlSystem
+        PlayerControlSystem::update(*entities[0], window);
     }
 }
 
-void GameStateManager::render() {
+void GameStateManager::render() const {
     window.clear(sf::Color::Black);
 
     if (currentState == GameState::MainMenu) {
@@ -87,10 +88,9 @@ void GameStateManager::render() {
         dot.setFillColor(sf::Color::Cyan);
         dot.setPosition({menuButtonCenter.x - menuButtonRadius, menuButtonCenter.y - menuButtonRadius});
         window.draw(dot);
-    }
-    else if (currentState == GameState::Gameplay) {
+    } else if (currentState == GameState::Gameplay) {
         if (renderSystem) {
-            renderSystem->render(window, entities);
+            RenderSystem::render(window, entities);
         }
     }
 

@@ -3,9 +3,12 @@
 
 class Entity;
 
+/**
+ * Система управления MC
+ */
 class PlayerControlSystem {
 public:
-    void update(
+    static void update(
         Entity &player,
         const sf::RenderWindow &window
     );

@@ -5,19 +5,21 @@
 
 class Entity;
 
+/**
+ * Система управления состояниями программы
+ */
 class GameStateManager {
 public:
-    GameStateManager(sf::RenderWindow &window);
-
+    explicit GameStateManager(sf::RenderWindow &window);
     ~GameStateManager(); // деструктор
 
     void handleEvents();
 
-    void update();
+    void update() const;
 
-    void render();
+    void render() const;
 
-    GameState getCurrentState() const { return currentState; }
+    [[nodiscard]] GameState getCurrentState() const { return currentState; }
 
 private:
     void switchToMainMenu();

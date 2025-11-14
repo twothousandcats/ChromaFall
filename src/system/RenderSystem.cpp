@@ -5,12 +5,11 @@
 
 void RenderSystem::render(
     sf::RenderWindow &window,
-    std::vector<std::unique_ptr<Entity>> &entities
+    const std::vector<std::unique_ptr<Entity> > &entities
 ) {
     for (auto &entity: entities) {
-        auto *pos = entity->getComponent<Position>();
-        auto *render = entity->getComponent<Renderable>();
-        if (pos && render) {
+        const auto *pos = entity->getComponent<Position>();
+        if (auto *render = entity->getComponent<Renderable>(); pos && render) {
             render->shape.setPosition(pos->value);
             window.draw(render->shape);
         }

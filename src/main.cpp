@@ -15,7 +15,7 @@ int main() {
         sf::VideoMode(WINDOW_SIZE),
         "Chromafall",
         sf::Style::Default,
-        sf::State::Fullscreen,
+        sf::State::Windowed,
         settings
     );
     window.setFramerateLimit(FRAMES_PER_SECOND);
