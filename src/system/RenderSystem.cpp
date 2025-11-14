@@ -7,7 +7,6 @@ void RenderSystem::render(
     sf::RenderWindow &window,
     std::vector<std::unique_ptr<Entity>> &entities
 ) {
-    window.clear(sf::Color::Black);
     for (auto &entity: entities) {
         auto *pos = entity->getComponent<Position>();
         auto *render = entity->getComponent<Renderable>();
@@ -16,5 +15,4 @@ void RenderSystem::render(
             window.draw(render->shape);
         }
     }
-    window.display();
 }
