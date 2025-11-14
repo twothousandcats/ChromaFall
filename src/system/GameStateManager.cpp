@@ -10,13 +10,79 @@
 
 constexpr unsigned int WINDOW_WIDTH = 800;
 constexpr unsigned int WINDOW_HEIGHT = 600;
+constexpr unsigned int WINDOW_CENTER_X = WINDOW_WIDTH / 2.f;
+constexpr sf::Vector2f WINDOW_SIZE = {WINDOW_CENTER_X, WINDOW_HEIGHT / 2.f};
 
 GameStateManager::GameStateManager(sf::RenderWindow &window)
-    : window(window) {
-    menuButtonCenter = {WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f};
+    : window(window), currentState(GameState::MainMenu) {
+    // определяем шрифт, иначе exit
+    if (!font.openFromFile("assets/fonts/Orbitron-VariableFont_wght.ttf")) {
+        exit(1);
+    }
+
+    // Заголовок
+    sf::Text title(font);
+    title.setString("ChromaFall");
+    title.setCharacterSize(titleFontSize);
+    title.setFillColor(titleColor);
+    sf::FloatRect bounds = title.getLocalBounds();
+    title.setOrigin(bounds.size / 2.f);
+    title.setPosition({WINDOW_CENTER_X, WINDOW_HEIGHT / 4.f});
+    titleText = std::move(title);
+
+    // Кнопки
+    auto [startBg, startTxt] = createButton(
+        "Start",
+        {WINDOW_CENTER_X, WINDOW_HEIGHT / 2.f},
+        font,
+        buttonFontSize,
+        buttonColor,
+        buttonTextColor
+    );
+    startButton = std::move(startBg);
+    startText = std::move(startTxt);
+
+    auto [exitBg, exitTxt] = createButton(
+        "Exit",
+        {WINDOW_CENTER_X, WINDOW_HEIGHT - 100.f},
+        font,
+        buttonFontSize,
+        buttonColor,
+        buttonTextColor
+    );
+    exitButton = std::move(exitBg);
+    exitText = std::move(exitTxt);
 }
 
 GameStateManager::~GameStateManager() = default;
+
+std::pair<sf::RectangleShape, sf::Text> GameStateManager::createButton(
+    const std::string &text,
+    const sf::Vector2f &positionCenter,
+    const sf::Font &font,
+    const unsigned int charSize,
+    const sf::Color &bgColor,
+    const sf::Color &textColor
+) {
+    sf::Text buttonText(font);
+    buttonText.setString(text);
+    buttonText.setCharacterSize(charSize);
+    buttonText.setStyle(sf::Text::Bold);
+    buttonText.setFillColor(textColor);
+    const sf::FloatRect textBounds = buttonText.getLocalBounds();
+    buttonText.setOrigin(textBounds.size / 2.f);
+    buttonText.setPosition(positionCenter);
+
+    sf::RectangleShape buttonBg;
+    buttonBg.setSize({200.f, 60.f}); // можно вынести как параметр
+    buttonBg.setFillColor(bgColor);
+    buttonBg.setPosition({
+        positionCenter.x - buttonBg.getSize().x / 2.f,
+        positionCenter.y - buttonBg.getSize().y / 2.f
+    });
+
+    return {buttonBg, buttonText};
+}
 
 void GameStateManager::switchToMainMenu() {
     currentState = GameState::MainMenu;
@@ -41,33 +107,30 @@ void GameStateManager::switchToGameplay() {
 }
 
 void GameStateManager::handleEvents() {
-    while (const auto event = window.pollEvent()) {
+    while (auto event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
             window.close();
-        } else if (event->is<sf::Event::KeyPressed>()) {
-            const auto &keyEvent = event->getIf<sf::Event::KeyPressed>();
-            if (keyEvent->code == sf::Keyboard::Key::Space) {
-                if (currentState == GameState::MainMenu) {
-                    switchToGameplay();
-                }
-            }
         } else if (currentState == GameState::MainMenu) {
             if (event->is<sf::Event::MouseButtonPressed>()) {
                 const auto &mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
                 if (mouseEvent->button == sf::Mouse::Button::Left) {
-                    // Получаем позицию мыши в координатах окна
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                    sf::Vector2f mousePosF = {static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)};
-
-                    // Проверяем расстояние до центра кнопки
-                    sf::Vector2f delta = mousePosF - menuButtonCenter;
-                    float distanceSquared = delta.x * delta.x + delta.y * delta.y;
-                    float radiusSquared = menuButtonRadius * menuButtonRadius;
-
-                    if (distanceSquared <= radiusSquared) {
+                    sf::FloatRect startButtonBounds = startButton.getGlobalBounds();
+                    sf::FloatRect exitButtonBounds = exitButton.getGlobalBounds();
+                    if (startButtonBounds.contains(static_cast<sf::Vector2f>(mousePos))) {
                         switchToGameplay();
                     }
+                    if (exitButtonBounds.contains(static_cast<sf::Vector2f>(mousePos))) {
+                        window.close();
+                    }
                 }
+            }
+        }
+        // Пробел оставим как резерв
+        else if (event->is<sf::Event::KeyPressed>()) {
+            const auto &keyEvent = event->getIf<sf::Event::KeyPressed>();
+            if (keyEvent->code == sf::Keyboard::Key::Space && currentState == GameState::MainMenu) {
+                switchToGameplay();
             }
         }
     }
@@ -84,10 +147,11 @@ void GameStateManager::render() const {
     window.clear(sf::Color::Black);
 
     if (currentState == GameState::MainMenu) {
-        sf::CircleShape dot(menuButtonRadius);
-        dot.setFillColor(sf::Color::Cyan);
-        dot.setPosition({menuButtonCenter.x - menuButtonRadius, menuButtonCenter.y - menuButtonRadius});
-        window.draw(dot);
+        if (titleText) window.draw(*titleText);
+        window.draw(startButton);
+        if (startText) window.draw(*startText);
+        window.draw(exitButton);
+        if (exitText) window.draw(*exitText);
     } else if (currentState == GameState::Gameplay) {
         if (renderSystem) {
             RenderSystem::render(window, entities);

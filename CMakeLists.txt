@@ -22,3 +22,5 @@ target_link_libraries(Chromafall PRIVATE
         SFML::System
         SFML::Audio
 )
+
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
