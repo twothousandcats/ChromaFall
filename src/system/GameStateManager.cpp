@@ -16,23 +16,24 @@ constexpr sf::Vector2f WINDOW_SIZE = {WINDOW_CENTER_X, WINDOW_HEIGHT / 2.f};
 GameStateManager::GameStateManager(sf::RenderWindow &window)
     : window(window), currentState(GameState::MainMenu) {
     // определяем шрифт, иначе exit
-    if (!font.openFromFile("assets/fonts/Orbitron-VariableFont_wght.ttf")) {
+    if (!font.openFromFile(boldFont)) {
         exit(1);
     }
 
     // Заголовок
     sf::Text title(font);
-    title.setString("ChromaFall");
+    title.setString(gameTitle);
     title.setCharacterSize(titleFontSize);
     title.setFillColor(titleColor);
+    title.setStyle(sf::Text::Bold);
     sf::FloatRect bounds = title.getLocalBounds();
     title.setOrigin(bounds.size / 2.f);
-    title.setPosition({WINDOW_CENTER_X, WINDOW_HEIGHT / 4.f});
+    title.setPosition({WINDOW_CENTER_X, WINDOW_HEIGHT / 2.f - buttonGap});
     titleText = std::move(title);
 
     // Кнопки
     auto [startBg, startTxt] = createButton(
-        "Start",
+        startTextValue,
         {WINDOW_CENTER_X, WINDOW_HEIGHT / 2.f},
         font,
         buttonFontSize,
@@ -43,8 +44,8 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
     startText = std::move(startTxt);
 
     auto [exitBg, exitTxt] = createButton(
-        "Exit",
-        {WINDOW_CENTER_X, WINDOW_HEIGHT - 100.f},
+        exitTextValue,
+        {WINDOW_CENTER_X, WINDOW_HEIGHT / 2.f + buttonGap},
         font,
         buttonFontSize,
         buttonColor,
@@ -74,7 +75,7 @@ std::pair<sf::RectangleShape, sf::Text> GameStateManager::createButton(
     buttonText.setPosition(positionCenter);
 
     sf::RectangleShape buttonBg;
-    buttonBg.setSize({200.f, 60.f}); // можно вынести как параметр
+    buttonBg.setSize({200.f, 60.f});
     buttonBg.setFillColor(bgColor);
     buttonBg.setPosition({
         positionCenter.x - buttonBg.getSize().x / 2.f,

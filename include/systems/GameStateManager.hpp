@@ -11,6 +11,7 @@ class Entity;
 class GameStateManager {
 public:
     explicit GameStateManager(sf::RenderWindow &window);
+
     ~GameStateManager(); // деструктор
 
     void handleEvents();
@@ -27,12 +28,12 @@ private:
     void switchToGameplay();
 
     static std::pair<sf::RectangleShape, sf::Text> createButton(
-        const std::string& text,
-        const sf::Vector2f& positionCenter,
-        const sf::Font& font,
+        const std::string &text,
+        const sf::Vector2f &positionCenter,
+        const sf::Font &font,
         unsigned int charSize = 32,
-        const sf::Color& bgColor = sf::Color(50, 50, 50),
-        const sf::Color& textColor = sf::Color::White
+        const sf::Color &bgColor = sf::Color({0, 204, 109, 100}),
+        const sf::Color &textColor = sf::Color({255, 255, 255, 100})
     );
 
     sf::RenderWindow &window;
@@ -43,6 +44,7 @@ private:
     std::optional<sf::Text> titleText;
     sf::Color titleColor = {147, 30, 119, 100};
     int titleFontSize = 40;
+    std::string gameTitle = "ChromaFall";
 
     std::optional<sf::Text> startText;
     std::string startTextValue = "Start";
@@ -53,9 +55,12 @@ private:
     sf::RectangleShape exitButton;
 
     sf::Vector2f buttonSize = {200.f, 60.f};
-    sf::Color buttonColor = {0, 204, 109, 80};
+    sf::Color buttonColor = {0, 204, 109, 100};
     sf::Color buttonTextColor = {255, 255, 255, 100};
     int buttonFontSize = 32;
+    float buttonGap = 40.f + buttonSize.y;
+    std::string defaultFont = "assets/fonts/Orbitron-Regular.ttf";
+    std::string boldFont = "assets/fonts/Orbitron-Bold.ttf";
 
     // Игра
     std::vector<std::unique_ptr<Entity> > entities;
