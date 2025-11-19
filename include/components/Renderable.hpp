@@ -7,10 +7,11 @@ struct Renderable final : Component {
 
     explicit Renderable(
         float w = 20,
-        float h = 20
+        float h = 20,
+        const sf::Color color = sf::Color::Cyan
     ) {
         shape.setSize({w, h});
-        shape.setOrigin({w / 2, h / 2});
-        shape.setFillColor(sf::Color::Cyan);
+        shape.setOrigin({w / 2.f, h / 2.f});
+        shape.setFillColor(color);
     }
 };

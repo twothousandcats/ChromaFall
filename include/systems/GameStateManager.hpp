@@ -3,6 +3,9 @@
 #include <memory>
 #include <vector>
 
+#include "MovementSystem.hpp"
+#include "ShootSystem.hpp"
+
 class Entity;
 
 /**
@@ -16,9 +19,9 @@ public:
 
     void handleEvents();
 
-    void update() const;
+    void update();
 
-    void render() const;
+    void render();
 
     [[nodiscard]] GameState getCurrentState() const { return currentState; }
 
@@ -32,8 +35,8 @@ private:
         const sf::Vector2f &positionCenter,
         const sf::Font &font,
         unsigned int charSize = 32,
-        const sf::Color &bgColor = sf::Color({0, 204, 109, 100}),
-        const sf::Color &textColor = sf::Color({255, 255, 255, 100})
+        const sf::Color &bgColor = sf::Color({0, 204, 109, 255}),
+        const sf::Color &textColor = sf::Color({255, 255, 255, 255})
     );
 
     sf::RenderWindow &window;
@@ -42,7 +45,7 @@ private:
     // Меню
     sf::Font font;
     std::optional<sf::Text> titleText;
-    sf::Color titleColor = {147, 30, 119, 100};
+    sf::Color titleColor = {147, 30, 119, 255};
     int titleFontSize = 40;
     std::string gameTitle = "ChromaFall";
 
@@ -55,8 +58,8 @@ private:
     sf::RectangleShape exitButton;
 
     sf::Vector2f buttonSize = {200.f, 60.f};
-    sf::Color buttonColor = {0, 204, 109, 100};
-    sf::Color buttonTextColor = {255, 255, 255, 100};
+    sf::Color buttonColor = {0, 204, 109, 255};
+    sf::Color buttonTextColor = {255, 255, 255, 255};
     int buttonFontSize = 32;
     float buttonGap = 40.f + buttonSize.y;
     std::string defaultFont = "assets/fonts/Orbitron-Regular.ttf";
@@ -66,4 +69,12 @@ private:
     std::vector<std::unique_ptr<Entity> > entities;
     class RenderSystem *renderSystem = nullptr;
     class PlayerControlSystem *playerControlSystem = nullptr;
+
+    // bullet
+    std::vector<std::unique_ptr<Entity>> bullets;
+    int bulletsCount = 1;
+    float bulletsSpreadAngle = 0.3f;
+    ShootSystem shootSystem;
+    MovementSystem movementSystem;
+    sf::Clock gameClock;
 };

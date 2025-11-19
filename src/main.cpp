@@ -1,4 +1,3 @@
-#include <iostream>
 #include <SFML/Graphics.hpp>
 #include "../include/systems/GameStateManager.hpp"
 
@@ -22,12 +21,10 @@ int main() {
 
     GameStateManager stateManager(window);
 
-    int frame = 0;
     while (window.isOpen()) {
         stateManager.handleEvents();
         stateManager.update();
         stateManager.render();
-        if (frame++ < 5) std::cout << "Frame: " << frame << std::endl;
     }
 
     return 0;

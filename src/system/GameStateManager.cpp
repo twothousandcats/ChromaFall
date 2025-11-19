@@ -1,4 +1,7 @@
 #include "../include/systems/GameStateManager.hpp"
+
+#include <iostream>
+
 #include "../include/entities/Entity.hpp"
 #include "../include/components/Position.hpp"
 #include "../include/components/Renderable.hpp"
@@ -96,6 +99,7 @@ void GameStateManager::switchToMainMenu() {
 
 void GameStateManager::switchToGameplay() {
     currentState = GameState::Gameplay;
+    bullets.clear();
 
     // создаем MC
     auto player = std::make_unique<Entity>();
@@ -126,9 +130,7 @@ void GameStateManager::handleEvents() {
                     }
                 }
             }
-        }
-        // Пробел оставим как резерв
-        else if (event->is<sf::Event::KeyPressed>()) {
+        } else if (event->is<sf::Event::KeyPressed>()) {
             const auto &keyEvent = event->getIf<sf::Event::KeyPressed>();
             if (keyEvent->code == sf::Keyboard::Key::Space && currentState == GameState::MainMenu) {
                 switchToGameplay();
@@ -137,14 +139,54 @@ void GameStateManager::handleEvents() {
     }
 }
 
-void GameStateManager::update() const {
+void GameStateManager::update() {
+    float deltaTime = gameClock.restart().asSeconds();
+
+    if (deltaTime > 0.1f) {
+        deltaTime = 0.1f;
+    }
+
     if (currentState == GameState::Gameplay && !entities.empty()) {
         // передаем указатель MC в PlayerControlSystem
         PlayerControlSystem::update(*entities[0], window);
+
+        // система стрельбы
+        auto *playerPosition = entities[0]->getComponent<Position>();
+        if (playerPosition) {
+            shootSystem.update(
+                bullets,
+                window,
+                playerPosition->value,
+                bulletsCount,
+                bulletsSpreadAngle
+            );
+        }
+
+        // определение системы движения (пули)
+        movementSystem.update(bullets, deltaTime);
+
+        std::cout << "Пуль в игре: " << bullets.size() << std::endl;
+
+        // удаление
+        for (auto it = bullets.begin(); it != bullets.end();) {
+            auto *position = (*it)->getComponent<Position>();
+            if (!position || position->value.y < -20.f) {
+                it = bullets.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
+        /* bool isLeftPressed = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+        static bool lastState = false;
+        if (isLeftPressed != lastState) {
+            std::cout << "Удержание ЛКМ: " << (isLeftPressed ? "ВКЛ" : "ВЫКЛ") << std::endl;
+            lastState = isLeftPressed;
+        } */
     }
 }
 
-void GameStateManager::render() const {
+void GameStateManager::render() {
     window.clear(sf::Color::Black);
 
     if (currentState == GameState::MainMenu) {
@@ -154,8 +196,15 @@ void GameStateManager::render() const {
         window.draw(exitButton);
         if (exitText) window.draw(*exitText);
     } else if (currentState == GameState::Gameplay) {
-        if (renderSystem) {
+        // MC
+        if (renderSystem && !entities.empty()) {
             RenderSystem::render(window, entities);
+        }
+
+        // пули (RenderSystem временный чисто для рендера)
+        if (!bullets.empty()) {
+            RenderSystem bulletsRender;
+            bulletsRender.render(window, bullets);
         }
     }
 
