@@ -23,6 +23,6 @@ public:
 
     static void render(
         sf::RenderWindow &window,
-        const std::vector<std::unique_ptr<Entity> > &entities
+        const std::vector<Entity *> &entities
     );
 };

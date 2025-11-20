@@ -30,6 +30,10 @@ private:
 
     void switchToGameplay();
 
+    void spawnAsteroid();
+
+    void checkCollisions();
+
     static std::pair<sf::RectangleShape, sf::Text> createButton(
         const std::string &text,
         const sf::Vector2f &positionCenter,
@@ -42,7 +46,7 @@ private:
     sf::RenderWindow &window;
     GameState currentState = GameState::MainMenu;
 
-    // Меню
+    // UI Меню
     sf::Font font;
     std::optional<sf::Text> titleText;
     sf::Color titleColor = {147, 30, 119, 255};
@@ -65,15 +69,18 @@ private:
     std::string defaultFont = "assets/fonts/Orbitron-Regular.ttf";
     std::string boldFont = "assets/fonts/Orbitron-Bold.ttf";
 
-    // Игра
-    std::vector<std::unique_ptr<Entity> > entities;
-    class RenderSystem *renderSystem = nullptr;
-    class PlayerControlSystem *playerControlSystem = nullptr;
+    // Игрок
+    std::unique_ptr<Entity> player;
 
-    // bullet
-    std::vector<std::unique_ptr<Entity>> bullets;
+    // Пули
+    std::vector<std::unique_ptr<Entity> > bullets;
     int bulletsCount = 1;
     float bulletsSpreadAngle = 0.3f;
+
+    // Астроиды
+    std::vector<std::unique_ptr<Entity> > asteroids;
+    sf::Clock asteroidClock;
+
     ShootSystem shootSystem;
     MovementSystem movementSystem;
     sf::Clock gameClock;
