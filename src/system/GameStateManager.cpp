@@ -16,6 +16,7 @@
 #include "components/Health.hpp"
 #include "components/Velocity.hpp"
 #include "config/SetupConfig.hpp"
+#include "config/UIConfig.hpp"
 #include "data/AsteroidTemplate.hpp"
 #include "systems/GameSession.hpp"
 
@@ -33,7 +34,7 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
     title.setFillColor(titleColor);
     title.setStyle(sf::Text::Bold);
     sf::FloatRect bounds = title.getLocalBounds();
-    title.setOrigin(bounds.size / 2.f);
+    title.setOrigin(bounds.size / HALF_DIVISOR);
     title.setPosition({WINDOW_CENTER_X, WINDOW_CENTER_Y - buttonGap});
     titleText = std::move(title);
 
@@ -51,7 +52,7 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
 
     auto [exitBg, exitTxt] = createButton(
         exitTextValue,
-        {WINDOW_CENTER_X, WINDOW_HEIGHT / 2.f + buttonGap},
+        {WINDOW_CENTER_X, WINDOW_HEIGHT / HALF_DIVISOR + buttonGap},
         font,
         buttonFontSize,
         buttonColor,
@@ -77,15 +78,15 @@ std::pair<sf::RectangleShape, sf::Text> GameStateManager::createButton(
     buttonText.setStyle(sf::Text::Bold);
     buttonText.setFillColor(textColor);
     const sf::FloatRect textBounds = buttonText.getLocalBounds();
-    buttonText.setOrigin(textBounds.size / 2.f);
+    buttonText.setOrigin(textBounds.size / HALF_DIVISOR);
     buttonText.setPosition(positionCenter);
 
     sf::RectangleShape buttonBg;
-    buttonBg.setSize({200.f, 60.f});
+    buttonBg.setSize(BUTTON_SIZE);
     buttonBg.setFillColor(bgColor);
     buttonBg.setPosition({
-        positionCenter.x - buttonBg.getSize().x / 2.f,
-        positionCenter.y - buttonBg.getSize().y / 2.f
+        positionCenter.x - buttonBg.getSize().x / HALF_DIVISOR,
+        positionCenter.y - buttonBg.getSize().y / HALF_DIVISOR
     });
 
     return {buttonBg, buttonText};
@@ -132,8 +133,8 @@ void GameStateManager::handleEvents() {
 void GameStateManager::update() {
     float deltaTime = gameClock.restart().asSeconds();
 
-    if (deltaTime > 0.1f) {
-        deltaTime = 0.1f;
+    if (deltaTime > DT_COMPENSATE_FACTOR) {
+        deltaTime = DT_COMPENSATE_FACTOR;
     }
 
     if (currentState == GameState::Gameplay && gameSession) {

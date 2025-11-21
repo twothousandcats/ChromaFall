@@ -8,6 +8,8 @@
 #include "components/Renderable.hpp"
 #include "components/Velocity.hpp"
 #include "config/AsteroidConfig.hpp"
+#include "config/GameConfig.hpp"
+#include "config/PlayerConfig.hpp"
 #include "config/SetupConfig.hpp"
 #include "data/AsteroidTemplate.hpp"
 #include "systems/PlayerControlSystem.hpp"
@@ -19,7 +21,7 @@ GameSession::GameSession(sf::RenderWindow &window) : window(window) {
     std::random_device rd;
     randomEngine.seed(rd());
     asteroidTypeDist = std::uniform_int_distribution<int>(0, 2);
-    asteroidIntervalDist = std::uniform_real_distribution<float>(0.5f, 3.f);
+    asteroidIntervalDist = std::uniform_real_distribution<float>(MIN_GEN_INTERVAL, MAX_GEN_INTERVAL);
 }
 
 void GameSession::reset() {
@@ -87,7 +89,7 @@ void GameSession::spawnAsteroid() {
 
     asteroid->addComponent(std::make_unique<Position>(x, -currentTemplate.radius));
     asteroid->addComponent(std::make_unique<Velocity>(xVel, 0));
-    asteroid->addComponent(std::make_unique<Acceleration>(0.f, 50.f));
+    asteroid->addComponent(std::make_unique<Acceleration>(0.f, ASTEROID_LINEAR_ACCELERATION));
     asteroid->addComponent(std::make_unique<Asteroid>(currentTemplate.size));
     asteroid->addComponent(std::make_unique<Health>(currentTemplate.health));
     asteroid->addComponent(std::make_unique<Renderable>(
@@ -105,15 +107,15 @@ bool GameSession::isIntersects(
     const sf::Vector2f &aSize,
     const sf::Vector2f &bSize
 ) {
-    const float aLeft = aPos.x - aSize.x / 2.f;
-    const float aRight = aPos.x + aSize.x / 2.f;
-    const float aTop = aPos.y - aSize.y / 2.f;
-    const float aBottom = aPos.y + aSize.y / 2.f;
+    const float aLeft = aPos.x - aSize.x / HALF_DIVISOR;
+    const float aRight = aPos.x + aSize.x / HALF_DIVISOR;
+    const float aTop = aPos.y - aSize.y / HALF_DIVISOR;
+    const float aBottom = aPos.y + aSize.y / HALF_DIVISOR;
 
-    const float bLeft = bPos.x - bSize.x / 2.f;
-    const float bRight = bPos.x + bSize.x / 2.f;
-    const float bTop = bPos.y - bSize.y / 2.f;
-    const float bBottom = bPos.y + bSize.y / 2.f;
+    const float bLeft = bPos.x - bSize.x / HALF_DIVISOR;
+    const float bRight = bPos.x + bSize.x / HALF_DIVISOR;
+    const float bTop = bPos.y - bSize.y / HALF_DIVISOR;
+    const float bBottom = bPos.y + bSize.y / HALF_DIVISOR;
 
     return aRight > bLeft
            && aLeft < bRight
@@ -230,7 +232,7 @@ void GameSession::cleanEntities() {
     // bullets
     for (auto it = bullets.begin(); it != bullets.end();) {
         auto *pos = (*it)->getComponent<Position>();
-        if (!pos || pos->value.y < -20.f) {
+        if (!pos || pos->value.y < -PLAYER_SIDE) {
             it = bullets.erase(it);
         } else {
             ++it;
@@ -238,10 +240,9 @@ void GameSession::cleanEntities() {
     }
 
     // asteroisd
-    float windowHeight = static_cast<float>(window.getSize().y);
     for (auto it = asteroids.begin(); it != asteroids.end();) {
         auto *pos = (*it)->getComponent<Position>();
-        if (!pos || pos->value.y > windowHeight + 100.f) {
+        if (!pos || pos->value.y > WINDOW_HEIGHT + LARGE_ASTEROID_RADIUS) {
             it = asteroids.erase(it);
         } else {
             ++it;

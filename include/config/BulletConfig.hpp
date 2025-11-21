@@ -1,5 +1,7 @@
 #pragma once
 
+#include  <SFML/Graphics.hpp>
+
 // SIZE
 constexpr float BULLET_WIDTH = 4.f;
 constexpr float BULLET_HEIGHT = 20.f;
