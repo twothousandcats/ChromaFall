@@ -8,6 +8,7 @@
 #include "ShootSystem.hpp"
 
 class Entity;
+class GameSession;
 
 /**
  * Система управления состояниями программы
@@ -70,23 +71,6 @@ private:
     std::string defaultFont = "assets/fonts/Orbitron-Regular.ttf";
     std::string boldFont = "assets/fonts/Orbitron-Bold.ttf";
 
-    // Игрок
-    std::unique_ptr<Entity> player;
-
-    // Пули
-    std::vector<std::unique_ptr<Entity> > bullets;
-    int bulletsCount = 1;
-    float bulletsSpreadAngle = 0.3f;
-
-    // Астроиды
-    std::vector<std::unique_ptr<Entity> > asteroids;
-    sf::Clock asteroidClock;
-
-    ShootSystem shootSystem;
-    MovementSystem movementSystem;
+    std::unique_ptr<GameSession> gameSession;
     sf::Clock gameClock;
-
-    // генератор
-    std::mt19937 randomEngine;
-    std::uniform_int_distribution<int> asteroidTypeDist;
 };

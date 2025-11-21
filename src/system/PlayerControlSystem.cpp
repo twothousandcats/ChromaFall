@@ -1,9 +1,9 @@
 #include "systems/PlayerControlSystem.hpp"
 
 #include "components/Position.hpp"
+#include "config/PlayerConfig.hpp"
 #include "entities/Entity.hpp"
 
-constexpr float PLAYER_SIDE = 20.f;
 
 void PlayerControlSystem::update(
     Entity &player,
