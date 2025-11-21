@@ -15,6 +15,7 @@
 #include "components/Asteroid.hpp"
 #include "components/Health.hpp"
 #include "components/Velocity.hpp"
+#include "data/AsteroidTemplate.hpp"
 
 constexpr unsigned int WINDOW_WIDTH = 800;
 constexpr unsigned int WINDOW_HEIGHT = 600;
@@ -27,6 +28,14 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
     if (!font.openFromFile(boldFont)) {
         exit(1);
     }
+
+    // генератор
+    std::random_device rd;
+    randomEngine.seed(rd());
+    // 0 - large,
+    // 1 - medium,
+    // 2 - small
+    asteroidTypeDist = std::uniform_int_distribution<>(0, 2);
 
     // Заголовок
     sf::Text title(font);
@@ -95,18 +104,22 @@ std::pair<sf::RectangleShape, sf::Text> GameStateManager::createButton(
 
 void GameStateManager::spawnAsteroid() {
     // TODO: Вынести в конфиг
+    auto &templates = getAsteroidTemplates();
+    int index = asteroidTypeDist(randomEngine) % static_cast<int>(templates.size());
+    const auto &currentTemplate = templates[index];
+
     auto asteroid = std::make_unique<Entity>();
     // определим х
     auto x = static_cast<float>(rand() % WINDOW_WIDTH);
-    asteroid->addComponent(std::make_unique<Position>(x, -30.f));
+    asteroid->addComponent(std::make_unique<Position>(x, -currentTemplate.radius));
     asteroid->addComponent(std::make_unique<Velocity>());
     asteroid->addComponent(std::make_unique<Acceleration>(0.f, 50.f));
-    asteroid->addComponent(std::make_unique<Asteroid>(AsteroidSize::LARGE));
-    asteroid->addComponent(std::make_unique<Health>(3.f));
+    asteroid->addComponent(std::make_unique<Asteroid>(currentTemplate.size));
+    asteroid->addComponent(std::make_unique<Health>(currentTemplate.health));
     asteroid->addComponent(std::make_unique<Renderable>(
-        60.f,
-        60.f,
-        sf::Color::White
+        currentTemplate.radius,
+        currentTemplate.radius,
+        currentTemplate.color
     ));
 
     asteroids.push_back(std::move(asteroid));

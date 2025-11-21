@@ -1,6 +1,7 @@
 #include "core/GameState.hpp"
 #include <SFML/Graphics.hpp>
 #include <memory>
+#include <random>
 #include <vector>
 
 #include "MovementSystem.hpp"
@@ -84,4 +85,8 @@ private:
     ShootSystem shootSystem;
     MovementSystem movementSystem;
     sf::Clock gameClock;
+
+    // генератор
+    std::mt19937 randomEngine;
+    std::uniform_int_distribution<int> asteroidTypeDist;
 };

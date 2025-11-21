@@ -43,9 +43,10 @@ void ShootSystem::update(
 
         float bulletX = baseX + offsetX;
         float bulletY = baseY;
-        bullet->addComponent(std::make_unique<Position>(bulletX, bulletY)); // определяем компонент позиции для пули
-        bullet->addComponent(std::make_unique<Velocity>(BULLET_VELOCITY_TRACE.x, -BULLET_VELOCITY_TRACE.y));
+        // определяем компонент позиции для пули
+        bullet->addComponent(std::make_unique<Position>(bulletX, bulletY));
         // определяем компоненту постоянной скорости
+        bullet->addComponent(std::make_unique<Velocity>(BULLET_VELOCITY_TRACE.x, -BULLET_VELOCITY_TRACE.y));
 
         // рендеринг пули
         auto renderable = std::make_unique<Renderable>();
