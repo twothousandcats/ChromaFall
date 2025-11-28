@@ -24,7 +24,7 @@ void GameSession::reset() {
     player = std::make_unique<Entity>();
     player->addComponent(std::make_unique<Position>());
     player->addComponent(std::make_unique<Renderable>());
-    player->addComponent(std::make_unique<Health>(3.f));
+    player->addComponent(std::make_unique<Health>(PLAYER_BASE_HP));
     player->addComponent(std::make_unique<Invincibility>());
 
     bullets.clear();

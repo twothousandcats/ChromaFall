@@ -11,6 +11,7 @@
 #include <SFML/Graphics.hpp>
 #include <optional>
 
+#include "config/GameConfig.hpp"
 #include "config/SetupConfig.hpp"
 #include "config/UIConfig.hpp"
 #include "data/AsteroidTemplate.hpp"
@@ -184,7 +185,7 @@ void GameStateManager::render() {
         window.draw(victoryText);
 
         // Через 3 секунды — в меню
-        if (victoryClock.getElapsedTime().asSeconds() > 3.f) {
+        if (victoryClock.getElapsedTime().asSeconds() > TIME_TO_SHOW_STATUS) {
             switchToMainMenu();
             victoryClock.restart();
         }
