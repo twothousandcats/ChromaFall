@@ -12,6 +12,7 @@
 #include "components/Renderable.hpp"
 
 #include "config/PlayerConfig.hpp"
+#include "systems/InvincibilitySystem.hpp"
 
 GameSession::GameSession(sf::RenderWindow &window) : window(window) {
     reset();
@@ -37,9 +38,7 @@ void GameSession::update(
     }
 
     // таймер неуязвимости
-    if (auto *invisibility = player->getComponent<Invincibility>()) {
-        invisibility->update(dt);
-    }
+    InvincibilitySystem::update(player.get(), dt);
     PlayerControlSystem::update(*player, window);
     auto *playerPosition = player->getComponent<Position>();
     if (playerPosition) {
@@ -101,10 +100,9 @@ void GameSession::render(
     if (player) {
         bool shouldDraw = true;
 
-        if (auto *playerInvisibility = player->getComponent<Invincibility>()) {
-            if (playerInvisibility->isActive()) {
-                float blinkTimer = gameClock.getElapsedTime().asSeconds();
-                shouldDraw = (static_cast<int>(blinkTimer * 5) % 2 == 0);
+        if (auto *playerInvincibility = player->getComponent<Invincibility>()) {
+            if (playerInvincibility->isActive()) {
+                shouldDraw = playerInvincibility->shouldDraw();
             }
         }
 
