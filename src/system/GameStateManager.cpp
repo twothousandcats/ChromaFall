@@ -170,8 +170,8 @@ void GameStateManager::render() {
 
         hpText.setCharacterSize(titleFontSize);
         hpText.setFillColor(sf::Color::White);
-        hpText.setString("HP: " + std::to_string(gameSession->getPlayerHp()));
-        hpText.setPosition({WINDOW_WIDTH - 100.f, WINDOW_HEIGHT - 100.f});
+        hpText.setString("HP: " + std::to_string(static_cast<int>(gameSession->getPlayerHp())));
+        hpText.setPosition({WINDOW_WIDTH - 150.f, WINDOW_HEIGHT - 100.f});
         window.draw(hpText);
     } else if (currentState == GameState::Victory) {
         sf::Text victoryText(font);
