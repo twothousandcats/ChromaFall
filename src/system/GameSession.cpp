@@ -4,6 +4,7 @@
 
 #include "components/Acceleration.hpp"
 #include "components/Health.hpp"
+#include "components/Invincibility.hpp"
 #include "components/Position.hpp"
 #include "components/Renderable.hpp"
 #include "components/Velocity.hpp"
@@ -29,6 +30,7 @@ void GameSession::reset() {
     player->addComponent(std::make_unique<Position>());
     player->addComponent(std::make_unique<Renderable>());
     player->addComponent(std::make_unique<Health>(3.f));
+    player->addComponent(std::make_unique<Invincibility>());
 
     bullets.clear();
     asteroids.clear();
@@ -43,6 +45,10 @@ void GameSession::update(
         return;
     }
 
+    // таймер неуязвимости
+    if (auto *invisibility = player->getComponent<Invincibility>()) {
+        invisibility->update(dt);
+    }
     PlayerControlSystem::update(*player, window);
     auto *playerPosition = player->getComponent<Position>();
     if (playerPosition) {
@@ -58,18 +64,56 @@ void GameSession::update(
     movementSystem.update(bullets, dt);
     movementSystem.update(asteroids, dt);
 
-    if (asteroidSpawnClock.getElapsedTime().asSeconds() >= currentSpawnInterval) {
-        spawnAsteroid();
-        currentSpawnInterval = asteroidIntervalDist(randomEngine);
-        asteroidSpawnClock.restart();
+    if (!gameOver && currentWave <= totalWaves) {
+        if (asteroidSpawnClock.getElapsedTime().asSeconds() >= currentSpawnInterval) {
+            spawnAsteroid();
+            currentSpawnInterval = asteroidIntervalDist(randomEngine);
+            asteroidSpawnClock.restart();
+        }
     }
 
-    checkCollision();
+    auto [isPlayerHit, isPlayerDied, destroyedAsteroidsCount, asteroidsToSplit] = CollisionSystem::update(
+        *player, bullets, asteroids);
+    for (const auto [pos, vel, size]: asteroidsToSplit) {
+        spawnChildAsteroid(pos, vel, size);
+    }
+
+    killedAsteroidsPerWave += destroyedAsteroidsCount;
+
+    if (!isWaveComplete) {
+        if (killedAsteroidsPerWave >= currentWave * killedAsteroidsForUp) {
+            isWaveComplete = true;
+            waveCooldown = POST_WAVE_COOLDOWN;
+        }
+    }
+
+    if (isWaveComplete && waveCooldown > 0.f) {
+        waveCooldown -= dt;
+        if (waveCooldown <= 0.f) {
+            currentWave++;
+            killedAsteroidsPerWave = 0;
+            isWaveComplete = false;
+
+            // Увеличиваем сложность, если ещё есть волны
+            if (currentWave <= totalWaves) {
+                currentSpawnInterval = std::max(0.3f, currentSpawnInterval * 0.7f);
+            }
+        }
+    }
+
     cleanEntities();
 
-    if (getPlayerHp() <= 0.f) {
+    if (isPlayerDied) {
         gameOver = true;
     }
+}
+
+float GameSession::getPlayerHp() const {
+    if (const auto *playerHp = player->getComponent<Health>()) {
+        return playerHp->value;
+    }
+
+    return 0.f;
 }
 
 void GameSession::spawnAsteroid() {
@@ -101,117 +145,61 @@ void GameSession::spawnAsteroid() {
     asteroids.push_back(std::move(asteroid));
 }
 
-bool GameSession::isIntersects(
-    const sf::Vector2f &aPos,
-    const sf::Vector2f &bPos,
-    const sf::Vector2f &aSize,
-    const sf::Vector2f &bSize
+void GameSession::spawnChildAsteroid(
+    const sf::Vector2f &parentPos,
+    const sf::Vector2f &parentVel,
+    const AsteroidSize parentSize
 ) {
-    const float aLeft = aPos.x - aSize.x / HALF_DIVISOR;
-    const float aRight = aPos.x + aSize.x / HALF_DIVISOR;
-    const float aTop = aPos.y - aSize.y / HALF_DIVISOR;
-    const float aBottom = aPos.y + aSize.y / HALF_DIVISOR;
+    if (parentSize == AsteroidSize::SMALL) {
+        return;
+    }
 
-    const float bLeft = bPos.x - bSize.x / HALF_DIVISOR;
-    const float bRight = bPos.x + bSize.x / HALF_DIVISOR;
-    const float bTop = bPos.y - bSize.y / HALF_DIVISOR;
-    const float bBottom = bPos.y + bSize.y / HALF_DIVISOR;
+    const AsteroidSize childSize = parentSize == AsteroidSize::LARGE
+                                       ? AsteroidSize::MEDIUM
+                                       : AsteroidSize::SMALL;
+    auto &templates = getAsteroidTemplates();
+    const AsteroidTemplate *childTemplate = nullptr;
 
-    return aRight > bLeft
-           && aLeft < bRight
-           && aBottom > bTop
-           && aTop < bBottom;
-}
-
-void GameSession::checkCollision() {
-    // bullet -> asteroid
-    for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
-        auto *bulletPos = (*bulletIt)->getComponent<Position>();
-        auto *bulletRender = (*bulletIt)->getComponent<Renderable>();
-        bool bulletHit = false;
-
-        if (bulletPos && bulletRender) {
-            sf::Vector2f bulletSize = bulletRender->shape.getSize();
-
-            for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end();) {
-                auto *asteroidPos = (*asteroidIt)->getComponent<Position>();
-                auto *asteroidRender = (*asteroidIt)->getComponent<Renderable>();
-                auto *asteroidHealth = (*asteroidIt)->getComponent<Health>();
-
-                if (asteroidPos && asteroidRender && asteroidHealth) {
-                    sf::Vector2f asteroidSize = asteroidRender->shape.getSize();
-                    // попадание
-                    if (isIntersects(
-                        bulletPos->value,
-                        asteroidPos->value,
-                        bulletSize,
-                        asteroidSize
-                    )) {
-                        asteroidHealth->value -= 1.f;
-                        bulletHit = true;
-
-                        if (asteroidHealth->value <= 0.f) {
-                            asteroidIt = asteroids.erase(asteroidIt);
-                        } else {
-                            ++asteroidIt;
-                        }
-                        break;
-                    } else {
-                        ++asteroidIt;
-                    }
-                } else {
-                    ++asteroidIt;
-                }
-            }
-        }
-
-        if (bulletHit) {
-            bulletIt = bullets.erase(bulletIt);
-        } else {
-            ++bulletIt;
+    for (const auto &t: templates) {
+        if (t.size == childSize) {
+            childTemplate = &t;
+            break;
         }
     }
 
-    // asteroid -> player
-    if (player) {
-        auto *playerPos = player->getComponent<Position>();
-        auto *playerRender = player->getComponent<Renderable>();
-        if (playerPos && playerRender) {
-            sf::Vector2f playerSize = playerRender->shape.getSize();
-            auto *playerHealth = player->getComponent<Health>();
-            for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end();) {
-                auto *asteroidPos = (*asteroidIt)->getComponent<Position>();
-                auto *asteroidRender = (*asteroidIt)->getComponent<Renderable>();
-                if (asteroidPos && asteroidRender) {
-                    sf::Vector2f asteroidSize = asteroidRender->shape.getSize();
-                    if (isIntersects(
-                        playerPos->value,
-                        asteroidPos->value,
-                        playerSize,
-                        asteroidSize
-                    )) {
-                        asteroidIt = asteroids.erase(asteroidIt);
-                        playerHealth->value -= 1.f;
-                        std::cout << "player hit!" << getPlayerHp() << std::endl;
-                    } else {
-                        ++asteroidIt;
-                    }
-                } else {
-                    ++asteroidIt;
-                }
-            }
-        }
-    }
-}
-
-float GameSession::getPlayerHp() const {
-    if (player) {
-        if (const auto *hp = player->getComponent<Health>()) {
-            return hp->value;
-        }
+    if (!childTemplate) {
+        return;
     }
 
-    return 0.f;
+    // генерация разброса. Мб лучше задать дефолтные значения
+    std::uniform_real_distribution<float> angleDist(-0.5f, 0.5f);
+    std::uniform_real_distribution<float> speedMult(0.8f, 1.2f);
+
+    for (int i = 0; i < 2; ++i) {
+        float angleOffset = angleDist(randomEngine);
+        float speedFactor = speedMult(randomEngine);
+
+        sf::Vector2f childVel = parentVel;
+        // Поворачиваем вектор скорости
+        float len = std::sqrt(childVel.x * childVel.x + childVel.y * childVel.y);
+        float baseAngle = std::atan2(childVel.y, childVel.x);
+        float newAngle = baseAngle + angleOffset;
+        childVel.x = std::cos(newAngle) * len * speedFactor;
+        childVel.y = std::sin(newAngle) * len * speedFactor;
+
+        auto child = std::make_unique<Entity>();
+        child->addComponent(std::make_unique<Position>(parentPos.x, parentPos.y));
+        child->addComponent(std::make_unique<Velocity>(childVel.x, childVel.y));
+        child->addComponent(std::make_unique<Acceleration>(0.f, ASTEROID_LINEAR_ACCELERATION));
+        child->addComponent(std::make_unique<Asteroid>(childSize));
+        child->addComponent(std::make_unique<Health>(childTemplate->health));
+        child->addComponent(std::make_unique<Renderable>(
+            childTemplate->radius,
+            childTemplate->radius,
+            childTemplate->color
+        ));
+        asteroids.push_back(std::move(child));
+    }
 }
 
 void GameSession::setupEntities(
@@ -254,7 +242,18 @@ void GameSession::render(
     sf::RenderWindow &window
 ) {
     if (player) {
-        RenderSystem::render(window, {player.get()});
+        bool shouldDraw = true;
+
+        if (auto *playerInvisibility = player->getComponent<Invincibility>()) {
+            if (playerInvisibility->isActive()) {
+                float blinkTimer = gameClock.getElapsedTime().asSeconds();
+                shouldDraw = (static_cast<int>(blinkTimer * 5) % 2 == 0);
+            }
+        }
+
+        if (shouldDraw) {
+            RenderSystem::render(window, {player.get()});
+        }
     }
 
     setupEntities(window, bullets);

@@ -4,6 +4,8 @@
 
 #include "MovementSystem.hpp"
 #include "ShootSystem.hpp"
+#include "data/AsteroidSize.hpp"
+#include "systems/CollisionSystem.hpp"
 #include "entities/Entity.hpp"
 
 class GameSession {
@@ -14,11 +16,20 @@ public:
 
     void render(sf::RenderWindow &window);
 
+    [[nodiscard]] float getPlayerHp() const;
+
     void reset();
 
-    bool isGameOver() const { return gameOver; }
+    [[nodiscard]] bool isGameOver() const { return gameOver; }
 
-    [[nodiscard]] float getPlayerHp() const;
+    [[nodiscard]] int getCurrentWave() const { return currentWave; }
+    [[nodiscard]] int getTotalWaves() const { return totalWaves; }
+
+    [[nodiscard]] bool isVictory() const {
+        return currentWave > totalWaves;
+        // return currentWave > totalWaves && asteroids.empty() && bullets.empty();
+    }
+
 
 private:
     void setupEntities(
@@ -30,13 +41,10 @@ private:
 
     void spawnAsteroid();
 
-    void checkCollision();
-
-    bool isIntersects(
-        const sf::Vector2f &aPos,
-        const sf::Vector2f &bPos,
-        const sf::Vector2f &aSize,
-        const sf::Vector2f &bSize
+    void spawnChildAsteroid(
+        const sf::Vector2f &parentPos,
+        const sf::Vector2f &parentVel,
+        AsteroidSize parentSize
     );
 
     sf::RenderWindow &window;
@@ -48,6 +56,7 @@ private:
     MovementSystem movementSystem;
     ShootSystem shootSystem;
     sf::Clock asteroidSpawnClock;
+    sf::Clock gameClock;
 
     // генератор
     std::mt19937 randomEngine;
@@ -58,4 +67,12 @@ private:
     bool gameOver = false;
     int bulletsCount = 1;
     float spreadAngle = 0.3f;
+
+    // волны
+    int currentWave = 1;
+    int totalWaves = 3; // для бесконечного режима - не использовать
+    int killedAsteroidsPerWave = 0;
+    int killedAsteroidsForUp = 1; // base
+    bool isWaveComplete = false;
+    float waveCooldown = 0.f;
 };

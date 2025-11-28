@@ -73,4 +73,5 @@ private:
 
     std::unique_ptr<GameSession> gameSession;
     sf::Clock gameClock;
+    sf::Clock victoryClock;
 };

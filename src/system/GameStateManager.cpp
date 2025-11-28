@@ -137,6 +137,9 @@ void GameStateManager::update() {
         gameSession->update(deltaTime);
         if (gameSession->isGameOver()) {
             currentState = GameState::GameOver; // todo: реализовать экран
+        } else if (gameSession->isVictory()) {
+            currentState = GameState::Victory;
+            victoryClock.restart();
         }
     }
 }
@@ -152,6 +155,39 @@ void GameStateManager::render() {
         if (exitText) window.draw(*exitText);
     } else if (currentState == GameState::Gameplay && gameSession) {
         gameSession->render(window);
+
+        // вынести в метод
+        // wave UI
+        sf::Text waveText(font), hpText(font);
+        waveText.setCharacterSize(titleFontSize);
+        waveText.setFillColor(sf::Color::White);
+        waveText.setString("Wave: "
+                           + std::to_string(gameSession->getCurrentWave())
+                           + " / " + std::to_string(gameSession->getTotalWaves()));
+        waveText.setPosition({20.f, WINDOW_HEIGHT - 100.f});
+        window.draw(waveText);
+
+        hpText.setCharacterSize(titleFontSize);
+        hpText.setFillColor(sf::Color::White);
+        hpText.setString("HP: " + std::to_string(gameSession->getPlayerHp()));
+        hpText.setPosition({WINDOW_WIDTH - 100.f, WINDOW_HEIGHT - 100.f});
+        window.draw(hpText);
+    } else if (currentState == GameState::Victory) {
+        sf::Text victoryText(font);
+        victoryText.setString("VICTORY!");
+        victoryText.setCharacterSize(70);
+        victoryText.setFillColor(sf::Color(0, 255, 200));
+        victoryText.setStyle(sf::Text::Bold);
+        sf::FloatRect bounds = victoryText.getLocalBounds();
+        victoryText.setOrigin(bounds.size / 2.f);
+        victoryText.setPosition(WINDOW_CENTER);
+        window.draw(victoryText);
+
+        // Через 3 секунды — в меню
+        if (victoryClock.getElapsedTime().asSeconds() > 3.f) {
+            switchToMainMenu();
+            victoryClock.restart();
+        }
     } else if (currentState == GameState::GameOver) {
         window.close(); // todo: реализовать экран
     }
