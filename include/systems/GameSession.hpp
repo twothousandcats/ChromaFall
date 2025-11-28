@@ -4,6 +4,8 @@
 
 #include "MovementSystem.hpp"
 #include "ShootSystem.hpp"
+#include "WaveSystem.hpp"
+#include "config/WaveConfig.hpp"
 #include "data/AsteroidSize.hpp"
 #include "systems/CollisionSystem.hpp"
 #include "entities/Entity.hpp"
@@ -22,14 +24,15 @@ public:
 
     [[nodiscard]] bool isGameOver() const { return gameOver; }
 
-    [[nodiscard]] int getCurrentWave() const { return currentWave; }
-    [[nodiscard]] int getTotalWaves() const { return totalWaves; }
+    [[nodiscard]] int getCurrentWave() const { return waveSystem.getCurrentWave(); }
 
-    [[nodiscard]] bool isVictory() const {
-        return currentWave > totalWaves;
-        // return currentWave > totalWaves && asteroids.empty() && bullets.empty();
+    [[nodiscard]] int getTotalWaves() const {
+        return waveSystem.getTotalWaves();
     }
 
+    [[nodiscard]] bool isVictory() const {
+        return waveSystem.isVictory();
+    }
 
 private:
     void setupEntities(
@@ -53,6 +56,7 @@ private:
     std::vector<std::unique_ptr<Entity> > bullets;
     std::vector<std::unique_ptr<Entity> > asteroids;
 
+    WaveSystem waveSystem{TOTAL_WAVES, KILLS_TO_WAVE_UP};
     MovementSystem movementSystem;
     ShootSystem shootSystem;
     sf::Clock asteroidSpawnClock;
@@ -67,12 +71,4 @@ private:
     bool gameOver = false;
     int bulletsCount = 1;
     float spreadAngle = 0.3f;
-
-    // волны
-    int currentWave = 1;
-    int totalWaves = 3; // для бесконечного режима - не использовать
-    int killedAsteroidsPerWave = 0;
-    int killedAsteroidsForUp = 1; // base
-    bool isWaveComplete = false;
-    float waveCooldown = 0.f;
 };

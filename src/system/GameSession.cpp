@@ -64,7 +64,7 @@ void GameSession::update(
     movementSystem.update(bullets, dt);
     movementSystem.update(asteroids, dt);
 
-    if (!gameOver && currentWave <= totalWaves) {
+    if (!gameOver && waveSystem.shouldSpawnAsteroids()) {
         if (asteroidSpawnClock.getElapsedTime().asSeconds() >= currentSpawnInterval) {
             spawnAsteroid();
             currentSpawnInterval = asteroidIntervalDist(randomEngine);
@@ -78,28 +78,7 @@ void GameSession::update(
         spawnChildAsteroid(pos, vel, size);
     }
 
-    killedAsteroidsPerWave += destroyedAsteroidsCount;
-
-    if (!isWaveComplete) {
-        if (killedAsteroidsPerWave >= currentWave * killedAsteroidsForUp) {
-            isWaveComplete = true;
-            waveCooldown = POST_WAVE_COOLDOWN;
-        }
-    }
-
-    if (isWaveComplete && waveCooldown > 0.f) {
-        waveCooldown -= dt;
-        if (waveCooldown <= 0.f) {
-            currentWave++;
-            killedAsteroidsPerWave = 0;
-            isWaveComplete = false;
-
-            // Увеличиваем сложность, если ещё есть волны
-            if (currentWave <= totalWaves) {
-                currentSpawnInterval = std::max(0.3f, currentSpawnInterval * 0.7f);
-            }
-        }
-    }
+    waveSystem.update(destroyedAsteroidsCount, dt);
 
     cleanEntities();
 
