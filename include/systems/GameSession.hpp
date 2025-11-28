@@ -2,6 +2,7 @@
 #include <random>
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include "AsteroidSpawnSystem.hpp"
 #include "MovementSystem.hpp"
 #include "ShootSystem.hpp"
 #include "WaveSystem.hpp"
@@ -59,14 +60,9 @@ private:
     WaveSystem waveSystem{TOTAL_WAVES, KILLS_TO_WAVE_UP};
     MovementSystem movementSystem;
     ShootSystem shootSystem;
-    sf::Clock asteroidSpawnClock;
-    sf::Clock gameClock;
+    AsteroidSpawnSystem asteroidSpawnSystem;
 
-    // генератор
-    std::mt19937 randomEngine;
-    std::uniform_int_distribution<int> asteroidTypeDist;
-    std::uniform_real_distribution<float> asteroidIntervalDist;
-    float currentSpawnInterval = 1.f;
+    sf::Clock gameClock;
 
     bool gameOver = false;
     int bulletsCount = 1;
