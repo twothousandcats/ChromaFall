@@ -1,4 +1,5 @@
 #pragma once
+#include "SFML/Graphics.hpp"
 
 // settings
 constexpr int DEFAULT_BULLETS_COUNT = 1;

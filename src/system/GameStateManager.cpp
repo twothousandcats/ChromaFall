@@ -16,46 +16,71 @@
 GameStateManager::GameStateManager(sf::RenderWindow &window)
     : window(window) {
     // определяем шрифт, иначе exit
-    if (!font.openFromFile(boldFont)) {
-        exit(1);
+    if (!font.openFromFile(BASE_FONT_BOLD)) {
+        if (!font.openFromFile(BASE_FONT_REGULAR)) {
+            exit(1);
+        }
     }
 
     // Заголовок
     sf::Text title(font);
-    title.setString(gameTitle);
-    title.setCharacterSize(titleFontSize);
-    title.setFillColor(titleColor);
+    title.setString(TITLE_TEXT);
+    title.setCharacterSize(TITLE_FONT_SIZE);
+    title.setFillColor(TITLE_COLOR);
     title.setStyle(sf::Text::Bold);
     sf::FloatRect bounds = title.getLocalBounds();
     title.setOrigin(bounds.size / HALF_DIVISOR);
-    title.setPosition({WINDOW_CENTER_X, WINDOW_CENTER_Y - buttonGap});
+    title.setPosition({WINDOW_CENTER_X, WINDOW_CENTER_Y - BUTTONS_Y_GAP});
     titleText = std::move(title);
 
     // Кнопки
     auto [startBg, startTxt] = createButton(
-        startTextValue,
+        START_BUTTON_TEXT,
         WINDOW_CENTER,
         font,
-        buttonFontSize,
-        buttonColor,
-        buttonTextColor
+        BUTTON_FONT_SIZE,
+        BUTTON_BG_COLOR,
+        BUTTON_TEXT_COLOR
     );
     startButton = std::move(startBg);
     startText = std::move(startTxt);
 
     auto [exitBg, exitTxt] = createButton(
-        exitTextValue,
-        {WINDOW_CENTER_X, WINDOW_HEIGHT / HALF_DIVISOR + buttonGap},
+        EXIT_BUTTON_TEXT,
+        {WINDOW_CENTER_X, WINDOW_HEIGHT / HALF_DIVISOR + BUTTONS_Y_GAP},
         font,
-        buttonFontSize,
-        buttonColor,
-        buttonTextColor
+        BUTTON_FONT_SIZE,
+        BUTTON_BG_COLOR,
+        BUTTON_TEXT_COLOR
     );
     exitButton = std::move(exitBg);
     exitText = std::move(exitTxt);
 }
 
 GameStateManager::~GameStateManager() = default;
+
+// решить вопрос с origin type
+sf::Text GameStateManager::createText(
+    const std::string &textContent,
+    const sf::Vector2f &position,
+    const sf::Font &font,
+    const unsigned int charSize,
+    const sf::Color &textColor,
+    const sf::Text::Style &textStyle
+) {
+    sf::Text text(font);
+    text.setString(textContent);
+    text.setCharacterSize(charSize);
+    text.setStyle(sf::Text::Bold);
+    text.setFillColor(textColor);
+    text.setStyle(textStyle);
+
+    const sf::FloatRect textBounds = text.getLocalBounds();
+    text.setOrigin(textBounds.size / HALF_DIVISOR);
+    text.setPosition(position);
+
+    return text;
+}
 
 std::pair<sf::RectangleShape, sf::Text> GameStateManager::createButton(
     const std::string &text,
@@ -65,14 +90,13 @@ std::pair<sf::RectangleShape, sf::Text> GameStateManager::createButton(
     const sf::Color &bgColor,
     const sf::Color &textColor
 ) {
-    sf::Text buttonText(font);
-    buttonText.setString(text);
-    buttonText.setCharacterSize(charSize);
-    buttonText.setStyle(sf::Text::Bold);
-    buttonText.setFillColor(textColor);
-    const sf::FloatRect textBounds = buttonText.getLocalBounds();
-    buttonText.setOrigin(textBounds.size / HALF_DIVISOR);
-    buttonText.setPosition(positionCenter);
+    const sf::Text buttonText = createText(
+        text,
+        positionCenter,
+        font,
+        charSize,
+        textColor
+    );
 
     sf::RectangleShape buttonBg;
     buttonBg.setSize(BUTTON_SIZE);
@@ -133,10 +157,11 @@ void GameStateManager::update() {
     if (currentState == GameState::Gameplay && gameSession) {
         gameSession->update(deltaTime);
         if (gameSession->isGameOver()) {
-            currentState = GameState::GameOver; // todo: реализовать экран
+            currentState = GameState::GameOver;
+            infoClock.restart();
         } else if (gameSession->isVictory()) {
             currentState = GameState::Victory;
-            victoryClock.restart();
+            infoClock.restart();
         }
     }
 }
@@ -153,40 +178,59 @@ void GameStateManager::render() {
     } else if (currentState == GameState::Gameplay && gameSession) {
         gameSession->render(window);
 
-        // вынести в метод
         // wave UI
-        sf::Text waveText(font), hpText(font);
-        waveText.setCharacterSize(titleFontSize);
-        waveText.setFillColor(sf::Color::White);
-        waveText.setString("Wave: "
-                           + std::to_string(gameSession->getCurrentWave())
-                           + " / " + std::to_string(gameSession->getTotalWaves()));
-        waveText.setPosition({20.f, WINDOW_HEIGHT - 100.f});
+        const sf::Text waveText = createText(
+            "Wave: " + std::to_string(gameSession->getCurrentWave()) + " / " + std::to_string(
+                gameSession->getTotalWaves()),
+            {WINDOW_WIDTH - 130.f, WINDOW_HEIGHT - TITLE_FONT_SIZE},
+            font,
+            TITLE_FONT_SIZE,
+            INFO_TEXT_COLOR,
+            sf::Text::Regular
+        );
         window.draw(waveText);
 
-        hpText.setCharacterSize(titleFontSize);
-        hpText.setFillColor(sf::Color::White);
-        hpText.setString("HP: " + std::to_string(static_cast<int>(gameSession->getPlayerHp())));
-        hpText.setPosition({WINDOW_WIDTH - 150.f, WINDOW_HEIGHT - 100.f});
+        const sf::Text hpText = createText(
+            "HP: " + std::to_string(static_cast<int>(gameSession->getPlayerHp())),
+            {70.f, WINDOW_HEIGHT - TITLE_FONT_SIZE},
+            font,
+            TITLE_FONT_SIZE,
+            INFO_TEXT_COLOR,
+            sf::Text::Regular
+        );
         window.draw(hpText);
     } else if (currentState == GameState::Victory) {
-        sf::Text victoryText(font);
-        victoryText.setString("VICTORY!");
-        victoryText.setCharacterSize(70);
-        victoryText.setFillColor(sf::Color(0, 255, 200));
-        victoryText.setStyle(sf::Text::Bold);
-        sf::FloatRect bounds = victoryText.getLocalBounds();
-        victoryText.setOrigin(bounds.size / 2.f);
-        victoryText.setPosition(WINDOW_CENTER);
+        const sf::Text victoryText = createText(
+            STATE_VICTORY_TEXT,
+            WINDOW_CENTER,
+            font,
+            STATE_TEXT_SIZE,
+            STATE_VICTORY_TEXT_COLOR,
+            sf::Text::Bold
+        );
         window.draw(victoryText);
 
         // Через 3 секунды — в меню
-        if (victoryClock.getElapsedTime().asSeconds() > TIME_TO_SHOW_STATUS) {
+        if (infoClock.getElapsedTime().asSeconds() > TIME_TO_SHOW_STATUS) {
             switchToMainMenu();
-            victoryClock.restart();
+            infoClock.restart();
         }
     } else if (currentState == GameState::GameOver) {
-        window.close(); // todo: реализовать экран
+        const sf::Text gameLostText = createText(
+            STATE_GAMEOVER_TEXT,
+            WINDOW_CENTER,
+            font,
+            STATE_TEXT_SIZE,
+            STATE_GAMEOVER_TEXT_COLOR,
+            sf::Text::Bold
+        );
+        window.draw(gameLostText);
+
+        // Через 3 секунды — в меню
+        if (infoClock.getElapsedTime().asSeconds() > TIME_TO_SHOW_STATUS) {
+            switchToMainMenu();
+            infoClock.restart();
+        }
     }
 
     window.display();

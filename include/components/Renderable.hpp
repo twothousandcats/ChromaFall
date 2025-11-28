@@ -6,8 +6,8 @@ struct Renderable final : Component {
     sf::RectangleShape shape;
 
     explicit Renderable(
-        float w = 20,
-        float h = 20,
+        float w = 20.f,
+        float h = 20.f,
         const sf::Color color = sf::Color::Cyan
     ) {
         shape.setSize({w, h});

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "core/GameState.hpp"
 #include <SFML/Graphics.hpp>
 #include <memory>
@@ -31,9 +33,14 @@ private:
 
     void switchToGameplay();
 
-    void spawnAsteroid();
-
-    void checkCollisions();
+    static sf::Text createText(
+        const std::string &textContent,
+        const sf::Vector2f &positionCenter,
+        const sf::Font &font,
+        unsigned int charSize,
+        const sf::Color &textColor,
+        const sf::Text::Style &textStyle = sf::Text::Bold
+    );
 
     static std::pair<sf::RectangleShape, sf::Text> createButton(
         const std::string &text,
@@ -50,27 +57,14 @@ private:
     // UI Меню
     sf::Font font;
     std::optional<sf::Text> titleText;
-    sf::Color titleColor = {147, 30, 119, 255};
-    int titleFontSize = 40;
-    std::string gameTitle = "ChromaFall";
 
     std::optional<sf::Text> startText;
-    std::string startTextValue = "Start";
     sf::RectangleShape startButton;
 
     std::optional<sf::Text> exitText;
-    std::string exitTextValue = "Exit";
     sf::RectangleShape exitButton;
-
-    sf::Vector2f buttonSize = {200.f, 60.f};
-    sf::Color buttonColor = {0, 204, 109, 255};
-    sf::Color buttonTextColor = {255, 255, 255, 255};
-    int buttonFontSize = 32;
-    float buttonGap = 40.f + buttonSize.y;
-    std::string defaultFont = "assets/fonts/Orbitron-Regular.ttf";
-    std::string boldFont = "assets/fonts/Orbitron-Bold.ttf";
 
     std::unique_ptr<GameSession> gameSession;
     sf::Clock gameClock;
-    sf::Clock victoryClock;
+    sf::Clock infoClock;
 };

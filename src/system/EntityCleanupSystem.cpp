@@ -2,14 +2,14 @@
 
 #include "components/Position.hpp"
 #include "config/AsteroidConfig.hpp"
-#include "config/PlayerConfig.hpp"
+#include "config/BulletConfig.hpp"
 #include "config/SetupConfig.hpp"
 #include "entities/Entity.hpp"
 
 void EntityCleanupSystem::cleanupBullets(std::vector<std::unique_ptr<Entity> > &bullets) {
     for (auto it = bullets.begin(); it != bullets.end();) {
         auto *pos = (*it)->getComponent<Position>();
-        if (!pos || pos->value.y < -PLAYER_SIDE) {
+        if (!pos || pos->value.y < -BULLET_HEIGHT) {
             it = bullets.erase(it);
         } else {
             ++it;

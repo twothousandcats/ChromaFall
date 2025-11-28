@@ -21,7 +21,7 @@ GameSession::GameSession(sf::RenderWindow &window) : window(window) {
 void GameSession::reset() {
     player = std::make_unique<Entity>();
     player->addComponent(std::make_unique<Position>());
-    player->addComponent(std::make_unique<Renderable>());
+    player->addComponent(std::make_unique<Renderable>(PLAYER_SIDE, PLAYER_SIDE, PLAYER_COLOR));
     player->addComponent(std::make_unique<Health>(PLAYER_BASE_HP));
     player->addComponent(std::make_unique<Invincibility>());
 
