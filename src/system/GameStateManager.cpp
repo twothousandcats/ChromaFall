@@ -1,12 +1,8 @@
-#include "../include/systems/GameStateManager.hpp"
+#include "systems/GameStateManager.hpp"
 
-#include <iostream>
-
-#include "../include/entities/Entity.hpp"
-#include "../include/components/Position.hpp"
-#include "../include/components/Renderable.hpp"
-#include "../include/systems/RenderSystem.hpp"
-#include "../include/systems/PlayerControlSystem.hpp"
+#include "entities/Entity.hpp"
+#include "components/Position.hpp"
+#include "systems/RenderSystem.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <optional>

@@ -7,8 +7,6 @@
 #include "ShootSystem.hpp"
 #include "WaveSystem.hpp"
 #include "config/WaveConfig.hpp"
-#include "data/AsteroidSize.hpp"
-#include "systems/CollisionSystem.hpp"
 #include "entities/Entity.hpp"
 
 class GameSession {
@@ -19,9 +17,9 @@ public:
 
     void render(sf::RenderWindow &window);
 
-    [[nodiscard]] float getPlayerHp() const;
-
     void reset();
+
+    [[nodiscard]] float getPlayerHp() const;
 
     [[nodiscard]] bool isGameOver() const { return gameOver; }
 
@@ -36,35 +34,20 @@ public:
     }
 
 private:
-    void setupEntities(
-        sf::RenderWindow &window,
-        const std::vector<std::unique_ptr<Entity> > &entities
-    );
-
-    void cleanEntities();
-
-    void spawnAsteroid();
-
-    void spawnChildAsteroid(
-        const sf::Vector2f &parentPos,
-        const sf::Vector2f &parentVel,
-        AsteroidSize parentSize
-    );
-
-    sf::RenderWindow &window;
     // сущности
     std::unique_ptr<Entity> player;
     std::vector<std::unique_ptr<Entity> > bullets;
     std::vector<std::unique_ptr<Entity> > asteroids;
 
+    // системы
     WaveSystem waveSystem{TOTAL_WAVES, KILLS_TO_WAVE_UP};
     MovementSystem movementSystem;
     ShootSystem shootSystem;
     AsteroidSpawnSystem asteroidSpawnSystem;
 
+    // общее
+    sf::RenderWindow &window;
     sf::Clock gameClock;
 
-    bool gameOver = false;
-    int bulletsCount = 1;
-    float spreadAngle = 0.3f;
+    bool gameOver = false; // state
 };

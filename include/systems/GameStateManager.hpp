@@ -4,7 +4,6 @@
 #include <random>
 #include <vector>
 
-#include "MovementSystem.hpp"
 #include "ShootSystem.hpp"
 
 class Entity;

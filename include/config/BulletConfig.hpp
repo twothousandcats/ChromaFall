@@ -1,6 +1,9 @@
 #pragma once
 
-#include  <SFML/Graphics.hpp>
+// settings
+constexpr int DEFAULT_BULLETS_COUNT = 1;
+constexpr float DEFAULT_BULLETS_SPREAD_FACTOR = 0.f;
+constexpr float SHOTGUN_BULLETS_SPREAD_FACTOR = 0.3f;
 
 // SIZE
 constexpr float BULLET_WIDTH = 4.f;

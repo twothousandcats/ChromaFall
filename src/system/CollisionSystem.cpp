@@ -1,6 +1,6 @@
 #include "systems/CollisionSystem.hpp"
 
-#include <iostream>
+
 #include <SFML/System/Vector2.hpp>
 
 #include "components/Asteroid.hpp"
@@ -8,9 +8,10 @@
 #include "components/Position.hpp"
 #include "components/Renderable.hpp"
 #include "components/Velocity.hpp"
-#include "components/Asteroid.hpp"
 #include "components/Invincibility.hpp"
+
 #include "config/SetupConfig.hpp"
+
 #include "entities/Entity.hpp"
 
 bool CollisionSystem::isIntersects(

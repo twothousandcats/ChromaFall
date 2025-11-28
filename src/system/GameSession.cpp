@@ -1,20 +1,17 @@
 #include "iostream"
 
 #include "systems/GameSession.hpp"
+#include "systems/CollisionSystem.hpp"
+#include "systems/EntityCleanupSystem.hpp"
+#include "systems/PlayerControlSystem.hpp"
+#include "systems/RenderSystem.hpp"
 
-#include "components/Acceleration.hpp"
 #include "components/Health.hpp"
 #include "components/Invincibility.hpp"
 #include "components/Position.hpp"
 #include "components/Renderable.hpp"
-#include "components/Velocity.hpp"
-#include "config/AsteroidConfig.hpp"
-#include "config/GameConfig.hpp"
+
 #include "config/PlayerConfig.hpp"
-#include "config/SetupConfig.hpp"
-#include "data/AsteroidTemplate.hpp"
-#include "systems/PlayerControlSystem.hpp"
-#include "systems/RenderSystem.hpp"
 
 GameSession::GameSession(sf::RenderWindow &window) : window(window) {
     reset();
@@ -50,8 +47,8 @@ void GameSession::update(
             bullets,
             window,
             playerPosition->value,
-            bulletsCount,
-            spreadAngle
+            DEFAULT_BULLETS_COUNT,
+            DEFAULT_BULLETS_SPREAD_FACTOR
         );
     }
 
@@ -82,7 +79,8 @@ void GameSession::update(
 
     waveSystem.update(destroyedAsteroidsCount, dt);
 
-    cleanEntities();
+    EntityCleanupSystem::cleanupBullets(bullets);
+    EntityCleanupSystem::cleanupAsteroids(asteroids);
 
     if (isPlayerDied) {
         gameOver = true;
@@ -95,42 +93,6 @@ float GameSession::getPlayerHp() const {
     }
 
     return 0.f;
-}
-
-void GameSession::setupEntities(
-    sf::RenderWindow &window,
-    const std::vector<std::unique_ptr<Entity> > &entities
-) {
-    if (!entities.empty()) {
-        std::vector<Entity *> ptrs;
-        ptrs.reserve(entities.size());
-        for (auto &entity: entities) {
-            ptrs.push_back(entity.get());
-        }
-        RenderSystem::render(window, ptrs);
-    }
-}
-
-void GameSession::cleanEntities() {
-    // bullets
-    for (auto it = bullets.begin(); it != bullets.end();) {
-        auto *pos = (*it)->getComponent<Position>();
-        if (!pos || pos->value.y < -PLAYER_SIDE) {
-            it = bullets.erase(it);
-        } else {
-            ++it;
-        }
-    }
-
-    // asteroids
-    for (auto it = asteroids.begin(); it != asteroids.end();) {
-        auto *pos = (*it)->getComponent<Position>();
-        if (!pos || pos->value.y > WINDOW_HEIGHT + LARGE_ASTEROID_RADIUS) {
-            it = asteroids.erase(it);
-        } else {
-            ++it;
-        }
-    }
 }
 
 void GameSession::render(
@@ -151,6 +113,6 @@ void GameSession::render(
         }
     }
 
-    setupEntities(window, bullets);
-    setupEntities(window, asteroids);
+    RenderSystem::render(window, bullets);
+    RenderSystem::render(window, asteroids);
 }

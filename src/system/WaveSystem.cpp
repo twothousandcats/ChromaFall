@@ -18,7 +18,6 @@ void WaveSystem::advanceToNextWave() {
     currentWave++;
     killedAsteroidsInCurrentWave = 0;
     isWaveCompleted = false;
-    // spawn interval в AsteroidSpawnSystem
 }
 
 void WaveSystem::update(

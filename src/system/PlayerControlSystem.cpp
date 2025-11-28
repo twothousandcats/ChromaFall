@@ -4,7 +4,6 @@
 #include "config/PlayerConfig.hpp"
 #include "entities/Entity.hpp"
 
-
 void PlayerControlSystem::update(
     Entity &player,
     const sf::RenderWindow &window

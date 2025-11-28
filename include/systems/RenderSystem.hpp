@@ -1,7 +1,6 @@
 #pragma once
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <vector>
-#include <memory>
 
 class Entity;
 
@@ -24,5 +23,11 @@ public:
     static void render(
         sf::RenderWindow &window,
         const std::vector<Entity *> &entities
+    );
+
+    // перегрузочный метод
+    static void render(
+        sf::RenderWindow &window,
+        const std::vector<std::unique_ptr<Entity> > &entities
     );
 };

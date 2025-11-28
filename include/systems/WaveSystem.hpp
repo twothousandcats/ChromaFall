@@ -1,5 +1,4 @@
 #pragma once
-#include "config/WaveConfig.hpp"
 
 class WaveSystem {
 public:

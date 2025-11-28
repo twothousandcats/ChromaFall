@@ -19,3 +19,21 @@ void RenderSystem::render(
         }
     }
 }
+
+void RenderSystem::render(
+        sf::RenderWindow &window,
+        const std::vector<std::unique_ptr<Entity> > &entities
+    ) {
+    for (const auto &entity: entities) {
+        if (!entity) {
+            continue;
+        }
+
+        const auto *pos = entity->getComponent<Position>();
+        auto *render = entity->getComponent<Renderable>();
+        if (pos && render) {
+            render->shape.setPosition(pos->value);
+            window.draw(render->shape);
+        }
+    }
+}
