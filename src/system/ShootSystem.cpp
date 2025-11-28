@@ -16,7 +16,7 @@ void ShootSystem::update(
     const sf::RenderWindow &window,
     const sf::Vector2f &playerPosition,
     int bulletsCount,
-    float spreadAngle
+    float spreadAngle // TODO: при реализации разброса (конфиг пуль)
 ) {
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
         return;

@@ -239,7 +239,7 @@ void GameSession::cleanEntities() {
         }
     }
 
-    // asteroisd
+    // asteroids
     for (auto it = asteroids.begin(); it != asteroids.end();) {
         auto *pos = (*it)->getComponent<Position>();
         if (!pos || pos->value.y > WINDOW_HEIGHT + LARGE_ASTEROID_RADIUS) {

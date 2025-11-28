@@ -13,7 +13,7 @@ void MovementSystem::update(
         auto *position = entity->getComponent<Position>();
         auto *velocity = entity->getComponent<Velocity>();
         if (!position || !velocity) {
-            return;
+            continue;
         }
 
         // обновляем скорость

@@ -1,11 +1,6 @@
 #pragma once
 #include "core/Component.hpp"
-
-enum class AsteroidSize {
-    LARGE,
-    MEDIUM,
-    SMALL
-};
+#include "data/AsteroidSize.hpp"
 
 struct Asteroid final : Component {
     AsteroidSize size;

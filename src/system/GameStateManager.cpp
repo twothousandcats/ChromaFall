@@ -11,10 +11,6 @@
 #include <SFML/Graphics.hpp>
 #include <optional>
 
-#include "components/Acceleration.hpp"
-#include "components/Asteroid.hpp"
-#include "components/Health.hpp"
-#include "components/Velocity.hpp"
 #include "config/SetupConfig.hpp"
 #include "config/UIConfig.hpp"
 #include "data/AsteroidTemplate.hpp"
