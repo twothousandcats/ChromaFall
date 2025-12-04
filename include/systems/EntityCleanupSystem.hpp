@@ -9,4 +9,6 @@ public:
     static void cleanupBullets(std::vector<std::unique_ptr<Entity> > &bullets);
 
     static void cleanupAsteroids(std::vector<std::unique_ptr<Entity> > &asteroids);
+
+    static void cleanupByHealth(std::vector<std::unique_ptr<Entity>>& entities);
 };

@@ -17,4 +17,7 @@ constexpr float ASTEROID_EDGE_X = 0;
 constexpr float ASTEROID_EDGE_VELOCITY = 80.f;
 constexpr float ASTEROID_LINEAR_ACCELERATION = 50.f;
 constexpr float BASE_SPAWN_INTERVAL = 1.f;
-constexpr float INTERVAL_REDUCTION_FACTOR = 0.7f;
+constexpr float INTERVAL_REDUCTION_FACTOR = 0.2f;
+
+// DROP ANGLE
+constexpr float ASTEROID_ANGLE_SPREAD_FACTOR = 0.5f;

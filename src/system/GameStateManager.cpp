@@ -59,7 +59,7 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
 
 GameStateManager::~GameStateManager() = default;
 
-// решить вопрос с origin type
+// todo: решить вопрос с origin type
 sf::Text GameStateManager::createText(
     const std::string &textContent,
     const sf::Vector2f &position,

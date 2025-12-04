@@ -85,7 +85,7 @@ void AsteroidSpawnSystem::spawnChildAsteroids(
         return;
     }
 
-    std::uniform_real_distribution<float> angleDist(-0.5f, 0.5f);
+    std::uniform_real_distribution<float> angleDist(-ASTEROID_ANGLE_SPREAD_FACTOR, ASTEROID_ANGLE_SPREAD_FACTOR);
     std::uniform_real_distribution<float> speedMult(0.8f, 1.2f);
 
     for (int i = 0; i < 2; ++i) {

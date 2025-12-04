@@ -1,5 +1,6 @@
 #include "systems/EntityCleanupSystem.hpp"
 
+#include "components/Health.hpp"
 #include "components/Position.hpp"
 #include "config/AsteroidConfig.hpp"
 #include "config/BulletConfig.hpp"
@@ -27,3 +28,15 @@ void EntityCleanupSystem::cleanupAsteroids(std::vector<std::unique_ptr<Entity> >
         }
     }
 }
+
+
+void EntityCleanupSystem::cleanupByHealth(std::vector<std::unique_ptr<Entity>>& entities) {
+    for (auto it = entities.begin(); it != entities.end();) {
+        auto* health = (*it)->getComponent<Health>();
+        if (health && health->value <= 0.f) {
+            it = entities.erase(it);
+        } else {
+            ++it;
+        }
+    }
+};
