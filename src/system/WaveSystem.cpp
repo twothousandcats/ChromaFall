@@ -17,27 +17,29 @@ int WaveSystem::getRequiredKillsForCurrentWave() const {
 void WaveSystem::advanceToNextWave() {
     currentWave++;
     killedAsteroidsInCurrentWave = 0;
-    isWaveCompleted = false;
+    phase = WavePhase::ASTEROIDS;
 }
 
 void WaveSystem::update(
     const int asteroidsDestroyedThisFrame,
     const float deltaTime
 ) {
-    if (isVictory() || isWaveCompleted) {
-        if (isWaveCompleted) {
-            waveCooldownTimer -= deltaTime;
-            if (waveCooldownTimer <= 0.f) {
-                advanceToNextWave();
-            }
+    if (isVictory()) {
+        return;
+    }
+
+    if (phase == WavePhase::COOLDOWN) {
+        waveCooldownTimer -= deltaTime;
+        if (waveCooldownTimer <= 0.f) {
+            advanceToNextWave(); // reset
         }
         return;
     }
 
-    killedAsteroidsInCurrentWave += asteroidsDestroyedThisFrame;
-
-    if (killedAsteroidsInCurrentWave >= getRequiredKillsForCurrentWave()) {
-        isWaveCompleted = true;
-        waveCooldownTimer = WAVE_COOLDOWN_DURATION;
+    if (phase == WavePhase::ASTEROIDS) {
+        killedAsteroidsInCurrentWave += asteroidsDestroyedThisFrame;
+        if (killedAsteroidsInCurrentWave >= getRequiredKillsForCurrentWave()) {
+            phase = WavePhase::BOSS; // boss phase
+        }
     }
 }

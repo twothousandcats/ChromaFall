@@ -10,6 +10,7 @@
 #include "components/Invincibility.hpp"
 #include "components/Position.hpp"
 #include "components/Renderable.hpp"
+#include "components/TrapLaser.hpp"
 
 #include "config/PlayerConfig.hpp"
 #include "systems/InvincibilitySystem.hpp"
@@ -54,7 +55,7 @@ void GameSession::update(
     movementSystem.update(bullets, dt);
     movementSystem.update(asteroids, dt);
 
-    if (!gameOver && waveSystem.shouldSpawnAsteroids()) {
+    if (waveSystem.shouldSpawnAsteroids()) {
         asteroidSpawnSystem.update(
             asteroids,
             waveSystem.getCurrentWave(),
@@ -62,12 +63,34 @@ void GameSession::update(
         );
     }
 
-    auto [isPlayerHit, isPlayerDied, destroyedAsteroidsCount, asteroidsToSplit] = CollisionSystem::update(
-        *player,
-        bullets,
-        asteroids
-    );
-    for (const auto [pos, vel, size]: asteroidsToSplit) {
+    if (waveSystem.isBossPhase()) {
+        if (!boss) {
+            boss = BossSystem::spawnBoss(static_cast<BossType>(waveSystem.getCurrentWave() - 1));
+        }
+        BossBehaviorSystem::update(boss, asteroids, trapLasers, dt);
+
+        // Обновление лазеров (lifetime)
+        for (auto it = trapLasers.begin(); it != trapLasers.end();) {
+            auto *l = (*it)->getComponent<TrapLaser>();
+            if (l && (l->lifetime -= dt) <= 0) {
+                it = trapLasers.erase(it);
+            } else ++it;
+        }
+    } else {
+        boss.reset(); // защита
+    }
+
+    auto result = CollisionSystem::update(*player, bullets, asteroids, boss, trapLasers);
+
+    if (result.isBossHit) {
+        auto *bossHealth = boss ? boss->getComponent<Health>() : nullptr;
+        if (bossHealth && bossHealth->value <= 0.f) {
+            boss.reset();
+            waveSystem.onBossDefeated();
+        }
+    }
+
+    for (const auto [pos, vel, size]: result.asteroidsToSplit) {
         asteroidSpawnSystem.spawnChildAsteroids(
             asteroids,
             pos,
@@ -76,12 +99,12 @@ void GameSession::update(
         );
     }
 
-    waveSystem.update(destroyedAsteroidsCount, dt);
+    waveSystem.update(result.destroyedAsteroidsCount, dt);
 
     EntityCleanupSystem::cleanupBullets(bullets);
     EntityCleanupSystem::cleanupAsteroids(asteroids);
 
-    if (isPlayerDied) {
+    if (result.isPlayerDied) {
         gameOver = true;
     }
 }
@@ -113,4 +136,8 @@ void GameSession::render(
 
     RenderSystem::render(window, bullets);
     RenderSystem::render(window, asteroids);
+    if (boss) {
+        RenderSystem::render(window, {boss.get()});
+    }
+    RenderSystem::render(window, trapLasers);
 }

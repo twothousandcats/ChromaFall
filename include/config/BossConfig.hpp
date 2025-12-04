@@ -1,16 +1,20 @@
 #pragma  once
 #include <SFML/Graphics/Color.hpp>
 
-constexpr float BOSS_ATTACK_INTERVAL = 2.f;
-constexpr float BOSS_BASE_HP = 10.f;
-constexpr float BOSS_BASE_SIDE_SIZE = 80.f;
 constexpr sf::Color BOSS_COLOR = {136, 123, 232, 255};
+constexpr float DOUBLE_FACTOR = 2.f;
+constexpr float BOSS_ATTACK_INTERVAL = 3.f;
+constexpr float BOSS_LASER_DURATION = 3.f;
+constexpr float BOSS_LASER_ACTIVE = 1.f;
 
-constexpr float BOSS_POSITION_SHIFT = 100.f;
+// EASY
+constexpr float EASY_BOSS_HP = 5.f;
+constexpr float EASY_BOSS_SIZE = 60.f;
 
-constexpr int ASTEROIDS_TO_SHOOT_COUNT = 10;
-constexpr float ASTEROIDS_ANGLE_SPEED = 0.4f;  // радианы
-constexpr float ASTEROIDS_BASE_SPEED = 150.f;  // радианы
+// MEDIUM
+constexpr float MEDIUM_BOSS_HP = EASY_BOSS_HP * DOUBLE_FACTOR;
+constexpr float MEDIUM_BOSS_SIZE = EASY_BOSS_SIZE;
 
-constexpr int LASER_COUNT = 3;
-constexpr float BASE_X_DIST = 100.f;
+// HARD
+constexpr float HARD_BOSS_HP = MEDIUM_BOSS_HP * DOUBLE_FACTOR;
+constexpr float HARD_BOSS_SIZE = EASY_BOSS_SIZE;

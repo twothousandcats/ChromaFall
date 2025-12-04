@@ -1,4 +1,3 @@
-
 #pragma once
 #include <memory>
 #include <vector>
@@ -15,12 +14,15 @@ public:
         bool isPlayerDied = false;
         int destroyedAsteroidsCount = 0;
         std::vector<std::tuple<sf::Vector2f, sf::Vector2f, AsteroidSize> > asteroidsToSplit;
+        bool isBossHit = false;
     };
 
     static Result update(
         Entity &player,
         std::vector<std::unique_ptr<Entity> > &bullets,
-        std::vector<std::unique_ptr<Entity> > &asteroids
+        std::vector<std::unique_ptr<Entity> > &asteroids,
+        std::unique_ptr<Entity> &boss,
+        const std::vector<std::unique_ptr<Entity> > &trapLasers
     );
 
 private:

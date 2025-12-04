@@ -39,7 +39,9 @@ bool CollisionSystem::isIntersects(
 CollisionSystem::Result CollisionSystem::update(
     Entity &player,
     std::vector<std::unique_ptr<Entity> > &bullets,
-    std::vector<std::unique_ptr<Entity> > &asteroids
+    std::vector<std::unique_ptr<Entity> > &asteroids,
+    std::unique_ptr<Entity> &boss,
+    const std::vector<std::unique_ptr<Entity>> &trapLasers
 ) {
     Result result;
 
@@ -137,6 +139,71 @@ CollisionSystem::Result CollisionSystem::update(
                     }
 
                     // std::cout << "player hit!" << playerHealth->value << std::endl;
+                }
+            }
+        }
+    }
+
+    // bullets -> boss
+    if (boss) {
+        auto *bossPos = boss->getComponent<Position>();
+        auto *bossRender = boss->getComponent<Renderable>();
+        auto *bossHealth = boss->getComponent<Health>();
+
+        if (bossPos && bossRender && bossHealth) {
+            sf::Vector2f bossSize = bossRender->shape.getSize();
+
+            for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
+                auto *bulletPos = (*bulletIt)->getComponent<Position>();
+                auto *bulletRender = (*bulletIt)->getComponent<Renderable>();
+
+                if (bulletPos && bulletRender) {
+                    if (isIntersects(bulletPos->value, bossPos->value,
+                                     bulletRender->shape.getSize(), bossSize)) {
+                        bossHealth->value -= 1.f;
+                        result.isBossHit = true;
+                        bulletIt = bullets.erase(bulletIt);
+                        break;
+                    }
+                }
+                ++bulletIt;
+            }
+        }
+    }
+
+    // trapLasers -> player
+    if (!result.isPlayerDied) {
+        auto* playerPos = player.getComponent<Position>();
+        auto* playerRender = player.getComponent<Renderable>();
+        auto* playerHealth = player.getComponent<Health>();
+        auto* playerInv = player.getComponent<Invincibility>();
+
+        if (playerPos && playerRender && playerHealth) {
+            sf::Vector2f playerSize = playerRender->shape.getSize();
+
+            for (const auto& laser : trapLasers) {
+                auto* laserPos = laser->getComponent<Position>();
+                auto* laserRender = laser->getComponent<Renderable>();
+
+                if (laserPos && laserRender) {
+                    if (isIntersects(
+                        playerPos->value,
+                        laserPos->value,
+                        playerSize,
+                        laserRender->shape.getSize()
+                    )) {
+                        if (!playerInv || !playerInv->isActive()) {
+                            playerHealth->value -= 1.f;
+                            result.isPlayerHit = true;
+                            if (playerHealth->value <= 0.f) {
+                                result.isPlayerDied = true;
+                            }
+                            if (playerInv) {
+                                playerInv->activate();
+                            }
+                            break;
+                        }
+                    }
                 }
             }
         }

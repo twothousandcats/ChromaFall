@@ -8,6 +8,8 @@
 #include "WaveSystem.hpp"
 #include "config/WaveConfig.hpp"
 #include "entities/Entity.hpp"
+#include "systems/BossSystem.hpp"
+#include "systems/BossBehaviorSystem.hpp"
 
 class GameSession {
 public:
@@ -38,6 +40,8 @@ private:
     std::unique_ptr<Entity> player;
     std::vector<std::unique_ptr<Entity> > bullets;
     std::vector<std::unique_ptr<Entity> > asteroids;
+    std::unique_ptr<Entity> boss;
+    std::vector<std::unique_ptr<Entity>> trapLasers;
 
     // системы
     WaveSystem waveSystem{TOTAL_WAVES, KILLS_TO_WAVE_UP};

@@ -1,5 +1,7 @@
 #include "systems/EntityCleanupSystem.hpp"
 
+#include <iostream>
+
 #include "components/Health.hpp"
 #include "components/Position.hpp"
 #include "config/AsteroidConfig.hpp"
@@ -21,6 +23,7 @@ void EntityCleanupSystem::cleanupBullets(std::vector<std::unique_ptr<Entity> > &
 void EntityCleanupSystem::cleanupAsteroids(std::vector<std::unique_ptr<Entity> > &asteroids) {
     for (auto it = asteroids.begin(); it != asteroids.end();) {
         auto *pos = (*it)->getComponent<Position>();
+        std::cout << "" << std::endl;
         if (!pos || pos->value.y > WINDOW_HEIGHT + LARGE_ASTEROID_RADIUS) {
             it = asteroids.erase(it);
         } else {
