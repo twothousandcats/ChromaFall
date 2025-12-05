@@ -72,15 +72,31 @@ void GameSession::update(
         }
         BossBehaviorSystem::update(boss, asteroids, trapLasers, dt);
 
-        // Обновление лазеров (lifetime)
+        // Обновление лазеров
         for (auto it = trapLasers.begin(); it != trapLasers.end();) {
-            auto *l = (*it)->getComponent<TrapLaser>();
-            if (l && (l->lifetime -= dt) <= 0) {
-                it = trapLasers.erase(it);
-            } else ++it;
+            auto* laser = (*it)->getComponent<TrapLaser>();
+            if (laser) {
+                laser->update(dt);
+
+                if (laser->timer >= laser->totalLifetime) {
+                    it = trapLasers.erase(it);
+                    continue;
+                }
+
+                // цвет рендера
+                auto* render = (*it)->getComponent<Renderable>();
+                if (render) {
+                    render->shape.setFillColor(
+                        laser->isActive ? TRAP_LASER_BASE_COLOR : TRAP_LASER_WARNING_COLOR
+                    );
+                }
+            }
+            ++it;
         }
     } else {
-        boss.reset(); // защита
+        // переход к следующей волне
+        boss.reset();
+        trapLasers.clear();
     }
 
     auto result = CollisionSystem::update(*player, bullets, asteroids, boss, trapLasers);

@@ -11,7 +11,8 @@ constexpr float TRAP_LASER_MARGIN = 50.f;
 constexpr float TRAP_LASER_ANGLE = 60.f;
 
 constexpr float TRAP_LASER_BASE_WIDTH = 8.f;
+constexpr float TRAP_LASER_BASE_HEIGHT = WINDOW_HEIGHT * 2.f;
 constexpr float TRAP_LASER_BASE_X_ORIGIN = TRAP_LASER_BASE_WIDTH / 2.f;
 constexpr float TRAP_LASER_BASE_Y_ORIGIN = 0.f;
-constexpr float TRAP_LASER_BASE_HEIGHT = WINDOW_HEIGHT * 2.f;
 constexpr sf::Color TRAP_LASER_BASE_COLOR = {255, 0, 0, 200};
+constexpr sf::Color TRAP_LASER_WARNING_COLOR = {255, 0, 0, 100};

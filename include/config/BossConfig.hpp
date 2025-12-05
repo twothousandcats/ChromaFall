@@ -8,6 +8,7 @@ constexpr sf::Color BOSS_COLOR_TYPE_HARD = {242, 192, 220, 255};
 constexpr float DOUBLE_FACTOR = 2.f;
 constexpr float BOSS_ATTACK_INTERVAL = 3.f;
 constexpr float BOSS_LASER_DURATION = 3.f;
+constexpr float BOSS_LASER_WARNING_TIME = 1.f;
 constexpr float BOSS_LASER_ACTIVE = 1.f;
 
 // EASY

@@ -73,26 +73,26 @@ void BossBehaviorSystem::spawnTrapLasers(
         float angle = angleDist(rng);
 
         auto laser = std::make_unique<Entity>();
-        laser->addComponent(std::make_unique<TrapLaser>());
-        auto *laserComp = laser->getComponent<TrapLaser>();
-        laserComp->position = {laserX, 0.f};
-        laserComp->lifetime = BOSS_LASER_DURATION;
-        laserComp->activeDuration = BOSS_LASER_ACTIVE;
-        laserComp->isActive = true;
+        auto trapComp = std::make_unique<TrapLaser>();
+        trapComp->position = {laserX, 0.f};
+        trapComp->totalLifetime = BOSS_LASER_DURATION;
+        trapComp->activeDelay = BOSS_LASER_WARNING_TIME;
+        laser->addComponent(std::move(trapComp));
 
         // верхняя точка лазера
         laser->addComponent(std::make_unique<Position>(laserX, 0.f));
 
         auto renderable = std::make_unique<Renderable>(
             TRAP_LASER_BASE_WIDTH,
-            WINDOW_HEIGHT * 2.f,
-            TRAP_LASER_BASE_COLOR
+            TRAP_LASER_BASE_HEIGHT,
+            TRAP_LASER_WARNING_COLOR
         );
+
         // Origin верх центр
         renderable->shape.setOrigin({TRAP_LASER_BASE_X_ORIGIN, TRAP_LASER_BASE_Y_ORIGIN});
         renderable->shape.setRotation(sf::degrees(angle));
-
         laser->addComponent(std::move(renderable));
+
         trapLasers.push_back(std::move(laser));
     }
 }
@@ -167,16 +167,20 @@ void BossBehaviorSystem::update(
             float sineTime = pattern->timeSinceSpawn - pattern->sineStartTime;
             pos->value.x = WINDOW_CENTER_X + BOSS_AMPLITUDE * std::sin(BOSS_FREQUENCY * sineTime);
 
-            // if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {
-            //     pattern->lastAttackTime = pattern->timeSinceSpawn;
-            //     spawnUpwardAsteroids(
-            //         asteroids,
-            //         pos->value,
-            //         BOSS_ASTEROIDS_TO_BLOW_COUNT,
-            //         BOSS_ASTEROIDS_TO_BLOW_SPEED,
-            //         BOSS_ASTEROIDS_TO_BLOW_COLOR
-            //     );
-            // }
+            if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {
+                pattern->lastAttackTime = pattern->timeSinceSpawn;
+                //     pattern->lastAttackTime = pattern->timeSinceSpawn;
+                //     spawnUpwardAsteroids(
+                //         asteroids,
+                //         pos->value,
+                //         BOSS_ASTEROIDS_TO_BLOW_COUNT,
+                //         BOSS_ASTEROIDS_TO_BLOW_SPEED,
+                //         BOSS_ASTEROIDS_TO_BLOW_COLOR
+                //     );
+                spawnTrapLasers(
+                    trapLasers
+                );
+            }
             break;
         }
 

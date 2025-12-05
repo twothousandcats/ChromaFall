@@ -9,6 +9,7 @@
 #include "components/Renderable.hpp"
 #include "components/Velocity.hpp"
 #include "components/Invincibility.hpp"
+#include "components/TrapLaser.hpp"
 
 #include "config/SetupConfig.hpp"
 
@@ -205,34 +206,38 @@ CollisionSystem::Result CollisionSystem::update(
                                  ) / 2.f;
 
             for (const auto &laser: trapLasers) {
+                auto *laserComp = laser->getComponent<TrapLaser>();
                 auto *laserPos = laser->getComponent<Position>();
                 auto *laserRender = laser->getComponent<Renderable>();
 
-                if (laserPos && laserRender) {
-                    float length = laserRender->shape.getSize().y; // высота = длина
+                if (!laserComp || !laserPos || !laserRender || !laserComp->isActive) {
+                    continue; // фаза подготовки
+                }
 
-                    sf::Transform transform = laserRender->shape.getTransform();
-                    sf::Vector2f localStart(0, 0); // origin
-                    sf::Vector2f localEnd(0, length); // вниз по локальной Y
-                    sf::Vector2f start = transform.transformPoint(localStart);
-                    sf::Vector2f end = transform.transformPoint(localEnd);
+                // активен - проверка
+                float length = laserRender->shape.getSize().y; // высота = длина
 
-                    float distance = distanceFromPointToSegment(playerCenter, start, end);
-                    float laserHalfWidth = laserRender->shape.getSize().x / 2.f;
-                    float threshold = playerRadius + laserHalfWidth;
+                sf::Transform transform = laserRender->shape.getTransform();
+                sf::Vector2f localStart(0, 0); // origin
+                sf::Vector2f localEnd(0, length); // вниз по локальной Y
+                sf::Vector2f start = transform.transformPoint(localStart);
+                sf::Vector2f end = transform.transformPoint(localEnd);
 
-                    if (distance <= threshold) {
-                        if (!playerInv || !playerInv->isActive()) {
-                            playerHealth->value -= 1.f;
-                            result.isPlayerHit = true;
-                            if (playerHealth->value <= 0.f) {
-                                result.isPlayerDied = true;
-                            }
-                            if (playerInv) {
-                                playerInv->activate();
-                            }
-                            break;
+                float distance = distanceFromPointToSegment(playerCenter, start, end);
+                float laserHalfWidth = laserRender->shape.getSize().x / 2.f;
+                float threshold = playerRadius + laserHalfWidth;
+
+                if (distance <= threshold) {
+                    if (!playerInv || !playerInv->isActive()) {
+                        playerHealth->value -= 1.f;
+                        result.isPlayerHit = true;
+                        if (playerHealth->value <= 0.f) {
+                            result.isPlayerDied = true;
                         }
+                        if (playerInv) {
+                            playerInv->activate();
+                        }
+                        break;
                     }
                 }
             }
