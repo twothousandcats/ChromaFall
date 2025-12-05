@@ -97,6 +97,48 @@ void BossBehaviorSystem::spawnTrapLasers(
     }
 }
 
+bool BossBehaviorSystem::handleEntryPhase(
+    BossPatternData &pattern,
+    Position &pos,
+    Velocity &vel,
+    float dt
+) {
+    constexpr float entryY = 100.f;
+    constexpr float targetX = WINDOW_CENTER_X;
+    constexpr float entrySpeed = 120.f;
+
+    // Спуск по Y
+    if (pos.value.y < entryY) {
+        vel.value = {0.f, 80.f};
+        return false; // вход ещё не завершён
+    }
+
+    // фикс по Y
+    pos.value.y = entryY;
+    vel.value.y = 0.f;
+
+    // выравнивание по Х
+    if (!pattern.hasEntered) {
+        float dx = targetX - pos.value.x;
+        float distance = std::abs(dx);
+
+        if (distance <= entrySpeed * dt) {
+            // Достиг центра
+            pos.value.x = targetX;
+            pattern.hasEntered = true;
+            pattern.sineStartTime = pattern.timeSinceSpawn;
+        } else {
+            vel.value.x = (dx > 0 ? entrySpeed : -entrySpeed);
+            pos.value.x += vel.value.x * dt;
+        }
+        return false; // всё ещё в фазе входа
+    }
+
+    // Сброс
+    vel.value.x = 0.f;
+    return true;
+}
+
 void BossBehaviorSystem::update(
     std::unique_ptr<Entity> &boss,
     std::vector<std::unique_ptr<Entity> > &asteroids,
@@ -118,28 +160,20 @@ void BossBehaviorSystem::update(
 
     pattern->timeSinceSpawn += dt;
 
-    // переход до точки
-    const float entryY = 100.f;
-    // std::cout << "Входная точка: " + std::to_string(entryY) << std::endl;
-    // std::cout << "Текущая точка: " + std::to_string(pos->value.y) << std::endl;
-    if (pos->value.y < entryY) {
-        vel->value = {0.f, 80.f}; // летит вниз
+    // фаза подготовки
+    if (!handleEntryPhase(*pattern, *pos, *vel, dt)) {
         return;
     }
-
-    vel->value = {0.f, 0.f};
-    pos->value.y = entryY;
 
     // Поведение по типу
     switch (bossComp->type) {
         case BossType::EASY: {
-            // поведение легкого типа
-            pos->value.x = WINDOW_WIDTH / 2.f + BOSS_AMPLITUDE * std::sin(BOSS_FREQUENCY * pattern->timeSinceSpawn);
+            float sineTime = pattern->timeSinceSpawn - pattern->sineStartTime;
+            pos->value.x = WINDOW_CENTER_X + BOSS_AMPLITUDE * std::sin(BOSS_FREQUENCY * sineTime);
             break;
         }
 
         case BossType::MEDIUM: {
-            // поведение усложненного типа
             pos->value.x = WINDOW_CENTER_X;
 
             if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {
@@ -156,7 +190,6 @@ void BossBehaviorSystem::update(
         }
 
         case BossType::HARD: {
-            // поведение сложного типа
             pos->value.x = WINDOW_CENTER_X;
 
             if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {

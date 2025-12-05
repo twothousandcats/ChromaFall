@@ -7,6 +7,7 @@
 
 #include "components/BossPatternData.hpp"
 #include "components/Position.hpp"
+#include "components/Velocity.hpp"
 #include "entities/Entity.hpp"
 
 class BossBehaviorSystem {
@@ -29,5 +30,13 @@ private:
 
     static void spawnTrapLasers(
         std::vector<std::unique_ptr<Entity>>& trapLasers
+    );
+
+
+    static bool handleEntryPhase(
+        BossPatternData& pattern,
+        Position& pos,
+        Velocity& vel,
+        float dt
     );
 };
