@@ -20,17 +20,17 @@ std::unique_ptr<Entity> BossSystem::spawnBoss(BossType type) {
         case BossType::EASY:
             maxHp = EASY_BOSS_HP;
             size = BOSS_SIZE;
-            color = BOSS_COLOR;
+            color = BOSS_COLOR_DEFAULT;
             break;
         case BossType::MEDIUM:
             maxHp = MEDIUM_BOSS_HP;
             size = BOSS_SIZE;
-            color = BOSS_COLOR;
+            color = BOSS_COLOR_TYPE_MEDIUM;
             break;
         case BossType::HARD:
             maxHp = HARD_BOSS_HP;
             size = BOSS_SIZE;
-            color = BOSS_COLOR;
+            color = BOSS_COLOR_TYPE_HARD;
             break;
     }
 

@@ -34,7 +34,7 @@ void BossBehaviorSystem::spawnUpwardAsteroids(
     sf::Color color
 ) {
     for (int i = 0; i < count; ++i) {
-        float offsetAngle = (i - 2) * 0.25f; // -0.5 .. +0.5 рад
+        float offsetAngle = (i - 2) * BOSS_ASTEROIDS_TO_BLOW_OFFSET_FACTOR; // -0.5 .. +0.5 рад
         float angle = -M_PI_2 + offsetAngle;
         float speed = baseSpeed;
 
@@ -44,12 +44,12 @@ void BossBehaviorSystem::spawnUpwardAsteroids(
             std::cos(angle) * speed,
             std::sin(angle) * speed
         ));
-        asteroid->addComponent(std::make_unique<Acceleration>(0.f, ASTEROID_LINEAR_ACCELERATION));
+        asteroid->addComponent(std::make_unique<Acceleration>(0.f, BOSS_ASTEROIDS_TO_BLOW_ACCELERATION));
         asteroid->addComponent(std::make_unique<Asteroid>(AsteroidSize::SMALL));
         asteroid->addComponent(std::make_unique<Health>(1.f));
         asteroid->addComponent(std::make_unique<Renderable>(
-            SMALL_ASTEROID_RADIUS * 2,
-            SMALL_ASTEROID_RADIUS * 2,
+            MEDIUM_ASTEROID_RADIUS,
+            MEDIUM_ASTEROID_RADIUS,
             color
         ));
         asteroids.push_back(std::move(asteroid));
@@ -66,7 +66,7 @@ void BossBehaviorSystem::spawnTrapLasers(
     const float minX = margin;
     const float maxX = WINDOW_WIDTH - margin;
     std::uniform_real_distribution<float> xDist(minX, maxX);
-    std::uniform_real_distribution<float> angleDist(-60.f, 60.f);
+    std::uniform_real_distribution<float> angleDist(-TRAP_LASER_ANGLE, TRAP_LASER_ANGLE);
 
     for (int i = 0; i < laserCount; ++i) {
         float laserX = xDist(rng);
@@ -85,11 +85,11 @@ void BossBehaviorSystem::spawnTrapLasers(
 
         auto renderable = std::make_unique<Renderable>(
             TRAP_LASER_BASE_WIDTH,
-            WINDOW_HEIGHT * 1.1f,
+            WINDOW_HEIGHT * 2.f,
             TRAP_LASER_BASE_COLOR
         );
         // Origin верх центр
-        renderable->shape.setOrigin({TRAP_LASER_BASE_WIDTH / 2.f, 0.f});
+        renderable->shape.setOrigin({TRAP_LASER_BASE_X_ORIGIN, TRAP_LASER_BASE_Y_ORIGIN});
         renderable->shape.setRotation(sf::degrees(angle));
 
         laser->addComponent(std::move(renderable));
@@ -103,32 +103,28 @@ bool BossBehaviorSystem::handleEntryPhase(
     Velocity &vel,
     float dt
 ) {
-    constexpr float entryY = 100.f;
-    constexpr float targetX = WINDOW_CENTER_X;
-    constexpr float entrySpeed = 120.f;
-
     // Спуск по Y
-    if (pos.value.y < entryY) {
-        vel.value = {0.f, 80.f};
+    if (pos.value.y < BOSS_ENTRY_Y_POS) {
+        vel.value = {0.f, BOSS_ENTRY_Y_SPEED};
         return false; // вход ещё не завершён
     }
 
     // фикс по Y
-    pos.value.y = entryY;
+    pos.value.y = BOSS_ENTRY_Y_POS;
     vel.value.y = 0.f;
 
     // выравнивание по Х
     if (!pattern.hasEntered) {
-        float dx = targetX - pos.value.x;
+        float dx = WINDOW_CENTER_X - pos.value.x;
         float distance = std::abs(dx);
 
-        if (distance <= entrySpeed * dt) {
+        if (distance <= BOSS_ENTRY_Y_SPEED * dt) {
             // Достиг центра
-            pos.value.x = targetX;
+            pos.value.x = WINDOW_CENTER_X;
             pattern.hasEntered = true;
             pattern.sineStartTime = pattern.timeSinceSpawn;
         } else {
-            vel.value.x = (dx > 0 ? entrySpeed : -entrySpeed);
+            vel.value.x = (dx > 0 ? BOSS_ENTRY_Y_SPEED : -BOSS_ENTRY_Y_SPEED);
             pos.value.x += vel.value.x * dt;
         }
         return false; // всё ещё в фазе входа
@@ -170,6 +166,17 @@ void BossBehaviorSystem::update(
         case BossType::EASY: {
             float sineTime = pattern->timeSinceSpawn - pattern->sineStartTime;
             pos->value.x = WINDOW_CENTER_X + BOSS_AMPLITUDE * std::sin(BOSS_FREQUENCY * sineTime);
+
+            // if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {
+            //     pattern->lastAttackTime = pattern->timeSinceSpawn;
+            //     spawnUpwardAsteroids(
+            //         asteroids,
+            //         pos->value,
+            //         BOSS_ASTEROIDS_TO_BLOW_COUNT,
+            //         BOSS_ASTEROIDS_TO_BLOW_SPEED,
+            //         BOSS_ASTEROIDS_TO_BLOW_COLOR
+            //     );
+            // }
             break;
         }
 
