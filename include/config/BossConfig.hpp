@@ -16,3 +16,10 @@ constexpr float MEDIUM_BOSS_HP = EASY_BOSS_HP * DOUBLE_FACTOR;
 
 // HARD
 constexpr float HARD_BOSS_HP = MEDIUM_BOSS_HP * DOUBLE_FACTOR;
+
+constexpr float BOSS_AMPLITUDE = 180.f; // амплитуда синусоиды
+constexpr float BOSS_FREQUENCY = 2.f; // частота синусоиды
+
+constexpr int BOSS_ASTEROIDS_TO_BLOW_COUNT = 25;
+constexpr sf::Color BOSS_ASTEROIDS_TO_BLOW_COLOR = {255, 0, 0, 255};
+constexpr float BOSS_ASTEROIDS_TO_BLOW_SPEED = 120.f;
