@@ -16,6 +16,7 @@
 #include "systems/AsteroidSpawnSystem.hpp"
 
 #include <cmath>
+#include <iostream>
 #include <random>
 
 #include "components/Acceleration.hpp"
@@ -48,12 +49,13 @@ void BossBehaviorSystem::update(
 
     // === Этап 1: вход с верхней границы ===
     const float entryY = 100.f;
+    std::cout << "Входная точка: " + std::to_string(entryY) << std::endl;
+    std::cout << "Текущая позиция точка: " + std::to_string(pos->value.y) << std::endl;
     if (pos->value.y < entryY) {
         vel->value = {0.f, 80.f}; // летит вниз
         return;
     }
 
-    // Остановка после входа
     vel->value = {0.f, 0.f};
     pos->value.y = entryY;
 

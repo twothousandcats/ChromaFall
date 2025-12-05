@@ -54,6 +54,9 @@ void GameSession::update(
 
     movementSystem.update(bullets, dt);
     movementSystem.update(asteroids, dt);
+    if (boss) {
+        movementSystem.update(*boss, dt);
+    }
 
     if (waveSystem.shouldSpawnAsteroids()) {
         asteroidSpawnSystem.update(

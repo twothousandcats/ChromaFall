@@ -26,8 +26,13 @@ public:
     [[nodiscard]] int getTotalWaves() const { return totalWaves; }
 
     [[nodiscard]] bool shouldSpawnAsteroids() const {
-        if (phase == WavePhase::ASTEROIDS) return true;
-        if (phase == WavePhase::BOSS) return currentWave == 1; // только Easy
+        if (phase == WavePhase::ASTEROIDS) {
+            return true;
+        }
+        if (phase == WavePhase::BOSS) {
+            return currentWave == 1; // только Easy
+        }
+
         return false;
     }
 

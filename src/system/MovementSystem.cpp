@@ -24,3 +24,14 @@ void MovementSystem::update(
         position->value += velocity->value * deltaTime;
     }
 }
+
+void MovementSystem::update(
+    Entity &entity,
+    float deltaTime
+) {
+    auto *pos = entity.getComponent<Position>();
+    auto *vel = entity.getComponent<Velocity>();
+    if (pos && vel) {
+        pos->value += vel->value * deltaTime;
+    }
+}

@@ -10,4 +10,9 @@ public:
         std::vector<std::unique_ptr<Entity> > &entities,
         float deltaTime
     );
+
+    void update(
+        Entity &entity,
+        float deltaTime
+    );
 };
