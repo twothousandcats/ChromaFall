@@ -36,12 +36,31 @@ bool CollisionSystem::isIntersects(
            && aTop < bBottom;
 }
 
+float CollisionSystem::distanceFromPointToSegment(
+    const sf::Vector2f &point,
+    const sf::Vector2f &segA,
+    const sf::Vector2f &segB
+) {
+    sf::Vector2f seg = segB - segA;
+    sf::Vector2f pt = point - segA;
+
+    float segLenSq = seg.x * seg.x + seg.y * seg.y;
+    if (segLenSq == 0.f) {
+        return std::sqrt(pt.x * pt.x + pt.y * pt.y);
+    }
+
+    float t = std::max(0.f, std::min(1.f, (pt.x * seg.x + pt.y * seg.y) / segLenSq));
+    sf::Vector2f projection = segA + t * seg;
+    sf::Vector2f diff = point - projection;
+    return std::sqrt(diff.x * diff.x + diff.y * diff.y);
+}
+
 CollisionSystem::Result CollisionSystem::update(
     Entity &player,
     std::vector<std::unique_ptr<Entity> > &bullets,
     std::vector<std::unique_ptr<Entity> > &asteroids,
     std::unique_ptr<Entity> &boss,
-    const std::vector<std::unique_ptr<Entity>> &trapLasers
+    const std::vector<std::unique_ptr<Entity> > &trapLasers
 ) {
     Result result;
 
@@ -173,25 +192,36 @@ CollisionSystem::Result CollisionSystem::update(
 
     // trapLasers -> player
     if (!result.isPlayerDied) {
-        auto* playerPos = player.getComponent<Position>();
-        auto* playerRender = player.getComponent<Renderable>();
-        auto* playerHealth = player.getComponent<Health>();
-        auto* playerInv = player.getComponent<Invincibility>();
+        auto *playerPos = player.getComponent<Position>();
+        auto *playerRender = player.getComponent<Renderable>();
+        auto *playerHealth = player.getComponent<Health>();
+        auto *playerInv = player.getComponent<Invincibility>();
 
         if (playerPos && playerRender && playerHealth) {
-            sf::Vector2f playerSize = playerRender->shape.getSize();
+            sf::Vector2f playerCenter = playerPos->value;
+            float playerRadius = std::max(
+                                     playerRender->shape.getSize().x,
+                                     playerRender->shape.getSize().y
+                                 ) / 2.f;
 
-            for (const auto& laser : trapLasers) {
-                auto* laserPos = laser->getComponent<Position>();
-                auto* laserRender = laser->getComponent<Renderable>();
+            for (const auto &laser: trapLasers) {
+                auto *laserPos = laser->getComponent<Position>();
+                auto *laserRender = laser->getComponent<Renderable>();
 
                 if (laserPos && laserRender) {
-                    if (isIntersects(
-                        playerPos->value,
-                        laserPos->value,
-                        playerSize,
-                        laserRender->shape.getSize()
-                    )) {
+                    float length = laserRender->shape.getSize().y; // высота = длина
+
+                    sf::Transform transform = laserRender->shape.getTransform();
+                    sf::Vector2f localStart(0, 0); // origin
+                    sf::Vector2f localEnd(0, length); // вниз по локальной Y
+                    sf::Vector2f start = transform.transformPoint(localStart);
+                    sf::Vector2f end = transform.transformPoint(localEnd);
+
+                    float distance = distanceFromPointToSegment(playerCenter, start, end);
+                    float laserHalfWidth = laserRender->shape.getSize().x / 2.f;
+                    float threshold = playerRadius + laserHalfWidth;
+
+                    if (distance <= threshold) {
                         if (!playerInv || !playerInv->isActive()) {
                             playerHealth->value -= 1.f;
                             result.isPlayerHit = true;

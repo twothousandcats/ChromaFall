@@ -9,5 +9,5 @@ constexpr int TRAP_LASER_COUNT_MAX = 5;
 constexpr float TRAP_LASER_MARGIN = 50.f;
 
 constexpr float TRAP_LASER_BASE_WIDTH = 8.f;
-constexpr float TRAP_LASER_BASE_HEIGHT = WINDOW_HEIGHT;
+constexpr float TRAP_LASER_BASE_HEIGHT = WINDOW_HEIGHT * 2.f;
 constexpr sf::Color TRAP_LASER_BASE_COLOR = {255, 0, 0, 200};

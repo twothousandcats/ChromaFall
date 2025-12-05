@@ -62,32 +62,37 @@ void BossBehaviorSystem::spawnTrapLasers(
     std::uniform_int_distribution<int> countDist(TRAP_LASER_COUNT_MIN, TRAP_LASER_COUNT_MAX);
     int laserCount = countDist(rng);
 
-    // Минимальное расстояние от краёв
     const float margin = TRAP_LASER_MARGIN;
     const float minX = margin;
     const float maxX = WINDOW_WIDTH - margin;
-
     std::uniform_real_distribution<float> xDist(minX, maxX);
+    std::uniform_real_distribution<float> angleDist(-60.f, 60.f);
 
     for (int i = 0; i < laserCount; ++i) {
-        float laserX = xDist(rng); // случайный X
+        float laserX = xDist(rng);
+        float angle = angleDist(rng);
 
         auto laser = std::make_unique<Entity>();
         laser->addComponent(std::make_unique<TrapLaser>());
         auto *laserComp = laser->getComponent<TrapLaser>();
-        laserComp->position = {laserX, WINDOW_CENTER_Y};
+        laserComp->position = {laserX, 0.f};
         laserComp->lifetime = BOSS_LASER_DURATION;
         laserComp->activeDuration = BOSS_LASER_ACTIVE;
         laserComp->isActive = true;
 
-        laser->addComponent(std::make_unique<Position>(laserX, WINDOW_CENTER_Y)); // начинается сверху
+        // верхняя точка лазера
+        laser->addComponent(std::make_unique<Position>(laserX, 0.f));
 
-        laser->addComponent(std::make_unique<Renderable>(
+        auto renderable = std::make_unique<Renderable>(
             TRAP_LASER_BASE_WIDTH,
-            TRAP_LASER_BASE_HEIGHT,
+            WINDOW_HEIGHT * 1.1f,
             TRAP_LASER_BASE_COLOR
-        ));
+        );
+        // Origin верх центр
+        renderable->shape.setOrigin({TRAP_LASER_BASE_WIDTH / 2.f, 0.f});
+        renderable->shape.setRotation(sf::degrees(angle));
 
+        laser->addComponent(std::move(renderable));
         trapLasers.push_back(std::move(laser));
     }
 }

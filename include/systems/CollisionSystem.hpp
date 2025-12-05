@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include "data/AsteroidSize.hpp"
@@ -31,5 +32,11 @@ private:
         const sf::Vector2f &bPos,
         const sf::Vector2f &aSize,
         const sf::Vector2f &bSize
+    );
+
+    static float distanceFromPointToSegment(
+        const sf::Vector2f &point,
+        const sf::Vector2f &segA,
+        const sf::Vector2f &segB
     );
 };
