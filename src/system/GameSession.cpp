@@ -66,15 +66,15 @@ void GameSession::update(
         );
     }
 
-    if (waveSystem.isBossPhase()) {
+    if (waveSystem.isBossPhase() && playerPosition) {
         if (!boss) {
             boss = BossSystem::spawnBoss(static_cast<BossType>(waveSystem.getCurrentWave() - 1));
         }
-        BossBehaviorSystem::update(boss, asteroids, trapLasers, dt);
+        BossBehaviorSystem::update(boss, playerPosition->value, asteroids, trapLasers, dt);
 
         // Обновление лазеров
         for (auto it = trapLasers.begin(); it != trapLasers.end();) {
-            auto* laser = (*it)->getComponent<TrapLaser>();
+            auto *laser = (*it)->getComponent<TrapLaser>();
             if (laser) {
                 laser->update(dt);
 
@@ -84,7 +84,7 @@ void GameSession::update(
                 }
 
                 // цвет рендера
-                auto* render = (*it)->getComponent<Renderable>();
+                auto *render = (*it)->getComponent<Renderable>();
                 if (render) {
                     render->shape.setFillColor(
                         laser->isActive ? TRAP_LASER_BASE_COLOR : TRAP_LASER_WARNING_COLOR

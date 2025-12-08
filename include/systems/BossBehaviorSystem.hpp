@@ -14,6 +14,7 @@ class BossBehaviorSystem {
 public:
     static void update(
         std::unique_ptr<Entity> &boss,
+        const sf::Vector2f &playerPos,
         std::vector<std::unique_ptr<Entity> > &asteroids, // для MEDIUM/HARD
         std::vector<std::unique_ptr<Entity> > &trapLasers, // для HARD
         float deltaTime
@@ -21,22 +22,23 @@ public:
 
 private:
     static void spawnUpwardAsteroids(
-        std::vector<std::unique_ptr<Entity>>& asteroids,
-        const sf::Vector2f& origin,
+        std::vector<std::unique_ptr<Entity> > &asteroids,
+        const sf::Vector2f &origin,
         int count = 25,
         float baseSpeed = 120.f,
         sf::Color color = sf::Color::Red
     );
 
     static void spawnTrapLasers(
-        std::vector<std::unique_ptr<Entity>>& trapLasers
+        std::vector<std::unique_ptr<Entity> > &trapLasers,
+        const sf::Vector2f &playerPosition
     );
 
 
     static bool handleEntryPhase(
-        BossPatternData& pattern,
-        Position& pos,
-        Velocity& vel,
+        BossPatternData &pattern,
+        Position &pos,
+        Velocity &vel,
         float dt
     );
 };

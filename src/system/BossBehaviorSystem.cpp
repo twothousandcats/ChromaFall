@@ -20,6 +20,7 @@
 #include <random>
 
 #include "components/Acceleration.hpp"
+#include "config/PlayerConfig.hpp"
 #include "config/SetupConfig.hpp"
 #include "config/TrapLaserConfig.hpp"
 
@@ -57,43 +58,51 @@ void BossBehaviorSystem::spawnUpwardAsteroids(
 }
 
 void BossBehaviorSystem::spawnTrapLasers(
-    std::vector<std::unique_ptr<Entity> > &trapLasers
-) {
+    std::vector<std::unique_ptr<Entity> > &trapLasers,
+    const sf::Vector2f &playerPosition
+    ) {
     std::uniform_int_distribution<int> countDist(TRAP_LASER_COUNT_MIN, TRAP_LASER_COUNT_MAX);
     int laserCount = countDist(rng);
 
-    const float margin = TRAP_LASER_MARGIN;
-    const float minX = margin;
-    const float maxX = WINDOW_WIDTH - margin;
-    std::uniform_real_distribution<float> xDist(minX, maxX);
+    std::uniform_real_distribution<float> xDist(TRAP_LASER_MARGIN, WINDOW_WIDTH - TRAP_LASER_MARGIN);
     std::uniform_real_distribution<float> angleDist(-TRAP_LASER_ANGLE, TRAP_LASER_ANGLE);
 
-    for (int i = 0; i < laserCount; ++i) {
-        float laserX = xDist(rng);
-        float angle = angleDist(rng);
-
+    // Лямбда создания лазера
+    auto createLaser = [&](sf::Vector2f position, float angle) {
         auto laser = std::make_unique<Entity>();
+
+        // TrapLaser компонент
         auto trapComp = std::make_unique<TrapLaser>();
-        trapComp->position = {laserX, 0.f};
+        trapComp->position = position;
         trapComp->totalLifetime = BOSS_LASER_DURATION;
         trapComp->activeDelay = BOSS_LASER_WARNING_TIME;
         laser->addComponent(std::move(trapComp));
 
-        // верхняя точка лазера
-        laser->addComponent(std::make_unique<Position>(laserX, 0.f));
+        // Position компонент
+        laser->addComponent(std::make_unique<Position>(position.x, position.y));
 
+        // Renderable компонент
         auto renderable = std::make_unique<Renderable>(
             TRAP_LASER_BASE_WIDTH,
             TRAP_LASER_BASE_HEIGHT,
             TRAP_LASER_WARNING_COLOR
         );
-
-        // Origin верх центр
         renderable->shape.setOrigin({TRAP_LASER_BASE_X_ORIGIN, TRAP_LASER_BASE_Y_ORIGIN});
         renderable->shape.setRotation(sf::degrees(angle));
         laser->addComponent(std::move(renderable));
 
-        trapLasers.push_back(std::move(laser));
+        return laser;
+    };
+
+    // auto aim
+    float playerAngle = angleDist(rng);
+    trapLasers.push_back(createLaser(playerPosition, playerAngle));
+
+    // default
+    for (int i = 1; i < laserCount; ++i) {
+        float x = xDist(rng);
+        float angle = angleDist(rng);
+        trapLasers.push_back(createLaser({x, 0.f}, angle));
     }
 }
 
@@ -137,6 +146,7 @@ bool BossBehaviorSystem::handleEntryPhase(
 
 void BossBehaviorSystem::update(
     std::unique_ptr<Entity> &boss,
+    const sf::Vector2f &playerPos,
     std::vector<std::unique_ptr<Entity> > &asteroids,
     std::vector<std::unique_ptr<Entity> > &trapLasers,
     float dt
@@ -169,6 +179,11 @@ void BossBehaviorSystem::update(
 
             if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {
                 pattern->lastAttackTime = pattern->timeSinceSpawn;
+
+                spawnTrapLasers(
+                    trapLasers,
+                    playerPos
+                );
             }
             break;
         }
@@ -202,7 +217,8 @@ void BossBehaviorSystem::update(
                     BOSS_ASTEROIDS_TO_BLOW_COLOR
                 );
                 spawnTrapLasers(
-                    trapLasers
+                    trapLasers,
+                    playerPos
                 );
             }
             break;
