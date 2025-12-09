@@ -26,6 +26,10 @@
 
 static std::mt19937 rng{std::random_device{}()};
 
+static float length(const sf::Vector2f &v) {
+    return std::sqrt(v.x * v.x + v.y * v.y);
+}
+
 // спавн как есть, было бы правильнее привязть к системе спавна
 void BossBehaviorSystem::spawnUpwardAsteroids(
     std::vector<std::unique_ptr<Entity> > &asteroids,
@@ -60,7 +64,7 @@ void BossBehaviorSystem::spawnUpwardAsteroids(
 void BossBehaviorSystem::spawnTrapLasers(
     std::vector<std::unique_ptr<Entity> > &trapLasers,
     const sf::Vector2f &playerPosition
-    ) {
+) {
     std::uniform_int_distribution<int> countDist(TRAP_LASER_COUNT_MIN, TRAP_LASER_COUNT_MAX);
     int laserCount = countDist(rng);
 
@@ -112,36 +116,90 @@ bool BossBehaviorSystem::handleEntryPhase(
     Velocity &vel,
     float dt
 ) {
-    // Спуск по Y
-    if (pos.value.y < BOSS_ENTRY_Y_POS) {
-        vel.value = {0.f, BOSS_ENTRY_Y_SPEED};
-        return false; // вход ещё не завершён
+    if (pattern.hasEntered) {
+        return true;
     }
 
-    // фикс по Y
+    if (pos.value.y < BOSS_ENTRY_Y_POS) {
+        vel.value = {0.f, BOSS_ENTRY_Y_SPEED};
+        return false;
+    }
+
+    // Зафиксировать Y
     pos.value.y = BOSS_ENTRY_Y_POS;
     vel.value.y = 0.f;
 
-    // выравнивание по Х
-    if (!pattern.hasEntered) {
-        float dx = WINDOW_CENTER_X - pos.value.x;
-        float distance = std::abs(dx);
-
-        if (distance <= BOSS_ENTRY_Y_SPEED * dt) {
-            // Достиг центра
-            pos.value.x = WINDOW_CENTER_X;
-            pattern.hasEntered = true;
-            pattern.sineStartTime = pattern.timeSinceSpawn;
-        } else {
-            vel.value.x = (dx > 0 ? BOSS_ENTRY_Y_SPEED : -BOSS_ENTRY_Y_SPEED);
-            pos.value.x += vel.value.x * dt;
-        }
-        return false; // всё ещё в фазе входа
+    // Выравнивание по X
+    float dx = WINDOW_CENTER_X - pos.value.x;
+    if (std::abs(dx) <= BOSS_ENTRY_Y_SPEED * dt) {
+        pos.value.x = WINDOW_CENTER_X;
+        pattern.hasEntered = true;
+        pattern.sineStartTime = pattern.timeSinceSpawn;
+        vel.value.x = 0.f;
+        return true;
     }
 
-    // Сброс
-    vel.value.x = 0.f;
-    return true;
+    vel.value.x = (dx > 0 ? BOSS_ENTRY_Y_SPEED : -BOSS_ENTRY_Y_SPEED);
+    return false;
+}
+
+void BossBehaviorSystem::initializeMovementZone(
+    BossPatternData &pattern,
+    const sf::Vector2f &center,
+    const sf::Vector2f &size
+) {
+    // сброс поведения
+    pattern.movementZone.position = {center.x - size.x, center.y - size.y};
+    pattern.movementZone.size = {size.x * DOUBLE_FACTOR, size.y * DOUBLE_FACTOR};
+    pattern.targetPos = center;
+    pattern.targetReached = true;
+    pattern.timeSinceLastTargetChange = 0.f;
+    pattern.approachVelocity = {0.f, 0.f};
+}
+
+void BossBehaviorSystem::moveWithinZone(
+    BossPatternData &pattern,
+    Position &pos,
+    Velocity &vel,
+    float dt,
+    float targetChangeInterval,
+    float stiffness,
+    float damping,
+    float arriveDistance,
+    float arriveSpeed
+) {
+    // Инициализация зоны (если не задана)
+    if (pattern.movementZone.size.x == 0.f && pattern.movementZone.size.y == 0.f) {
+        return;
+    }
+
+    // Смена цели по времени или при достижении
+    pattern.timeSinceLastTargetChange += dt;
+    if (pattern.targetReached || pattern.timeSinceLastTargetChange >= targetChangeInterval) {
+        std::uniform_real_distribution<float> xDist(
+            pattern.movementZone.position.x,
+            pattern.movementZone.position.x + pattern.movementZone.size.x
+        );
+        std::uniform_real_distribution<float> yDist(
+            pattern.movementZone.position.y,
+            pattern.movementZone.position.y + pattern.movementZone.size.y
+        );
+
+        pattern.targetPos = {xDist(rng), yDist(rng)};
+        pattern.targetReached = false;
+        pattern.timeSinceLastTargetChange = 0.f;
+    }
+
+    // Пружинное притяжение к цели
+    sf::Vector2f toTarget = pattern.targetPos - pos.value;
+    pattern.approachVelocity += toTarget * stiffness * dt;
+    pattern.approachVelocity *= (1.0f - damping * dt);
+    vel.value = pattern.approachVelocity;
+
+    // Проверка достижения
+    if (length(toTarget) < arriveDistance && length(pattern.approachVelocity) < arriveSpeed) {
+        pattern.targetReached = true;
+    }
 }
 
 void BossBehaviorSystem::update(
@@ -174,22 +232,56 @@ void BossBehaviorSystem::update(
     // Поведение по типу
     switch (bossComp->type) {
         case BossType::EASY: {
-            float sineTime = pattern->timeSinceSpawn - pattern->sineStartTime;
-            pos->value.x = WINDOW_CENTER_X + BOSS_AMPLITUDE * std::sin(BOSS_FREQUENCY * sineTime);
+            if (pattern->movementZone.position.x == 0.f) {
+                initializeMovementZone(
+                    *pattern,
+                    {WINDOW_CENTER_X, BOSS_ENTRY_Y_POS},
+                    {BOSS_ZONE_WIDTH, BOSS_ZONE_HEIGHT}
+                );
+            }
+
+            // Движение внутри зоны
+            moveWithinZone(
+                *pattern,
+                *pos,
+                *vel,
+                dt
+                );
 
             if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {
                 pattern->lastAttackTime = pattern->timeSinceSpawn;
-
+                spawnUpwardAsteroids(
+                    asteroids,
+                    pos->value,
+                    BOSS_ASTEROIDS_TO_BLOW_COUNT,
+                    BOSS_ASTEROIDS_TO_BLOW_SPEED * 2.f,
+                    BOSS_ASTEROIDS_TO_BLOW_COLOR
+                );
                 spawnTrapLasers(
                     trapLasers,
                     playerPos
                 );
             }
+
             break;
         }
 
         case BossType::MEDIUM: {
-            pos->value.x = WINDOW_CENTER_X;
+            if (pattern->movementZone.position.x == 0.f) {
+                initializeMovementZone(
+                    *pattern,
+                    {WINDOW_CENTER_X, BOSS_ENTRY_Y_POS},
+                    {BOSS_ZONE_WIDTH, BOSS_ZONE_HEIGHT}
+                );
+            }
+
+            // Движение внутри зоны
+            moveWithinZone(
+                *pattern,
+                *pos,
+                *vel,
+                dt
+            );
 
             if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {
                 pattern->lastAttackTime = pattern->timeSinceSpawn;
@@ -205,7 +297,21 @@ void BossBehaviorSystem::update(
         }
 
         case BossType::HARD: {
-            pos->value.x = WINDOW_CENTER_X;
+            if (pattern->movementZone.position.x == 0.f) {
+                initializeMovementZone(
+                    *pattern,
+                    {WINDOW_CENTER_X, BOSS_ENTRY_Y_POS},
+                    {BOSS_ZONE_WIDTH, BOSS_ZONE_HEIGHT}
+                );
+            }
+
+            // Движение внутри зоны
+            moveWithinZone(
+                *pattern,
+                *pos,
+                *vel,
+                dt
+            );
 
             if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {
                 pattern->lastAttackTime = pattern->timeSinceSpawn;

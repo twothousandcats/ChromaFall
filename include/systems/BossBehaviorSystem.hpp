@@ -8,6 +8,7 @@
 #include "components/BossPatternData.hpp"
 #include "components/Position.hpp"
 #include "components/Velocity.hpp"
+#include "config/BossConfig.hpp"
 #include "entities/Entity.hpp"
 
 class BossBehaviorSystem {
@@ -34,11 +35,28 @@ private:
         const sf::Vector2f &playerPosition
     );
 
-
     static bool handleEntryPhase(
         BossPatternData &pattern,
         Position &pos,
         Velocity &vel,
         float dt
+    );
+
+    static void moveWithinZone(
+        BossPatternData &pattern,
+        Position &pos,
+        Velocity &vel,
+        float dt,
+        float targetChangeInterval = BOSS_CHANGE_INTERVAL,
+        float stiffness = BOSS_STIFFNESS_FACTOR, // коэффициент ускорения в сторону цели
+        float damping = BOSS_DAMPING, // коэффициент затухания скорости
+        float arriveDistance = BOSS_ARRIVAL_DIST, // радиус покоя вокруг цели
+        float arriveSpeed = BOSS_ARRIVAL_SPEED // чтобы не засчитывать пролёт мимо как достижение
+    );
+
+    static void initializeMovementZone(
+        BossPatternData &pattern,
+        const sf::Vector2f &center,
+        const sf::Vector2f &size
     );
 };

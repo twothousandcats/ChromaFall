@@ -21,6 +21,7 @@ constexpr float MEDIUM_BOSS_HP = EASY_BOSS_HP * DOUBLE_FACTOR;
 // HARD
 constexpr float HARD_BOSS_HP = MEDIUM_BOSS_HP * DOUBLE_FACTOR;
 
+// behavior
 constexpr float BOSS_AMPLITUDE = 180.f; // амплитуда синусоиды
 constexpr float BOSS_FREQUENCY = 2.f; // частота синусоиды
 
@@ -31,5 +32,15 @@ constexpr float BOSS_ASTEROIDS_TO_BLOW_OFFSET_FACTOR = 0.25f;
 constexpr float BOSS_ASTEROIDS_TO_BLOW_ACCELERATION = 50.f;
 
 // entry phase
-constexpr float BOSS_ENTRY_Y_POS = 100.f;
+constexpr float BOSS_ENTRY_Y_POS = 150.f;
 constexpr float BOSS_ENTRY_Y_SPEED = 120.f;
+
+// zone settings
+constexpr float BOSS_ZONE_WIDTH = 200.f;
+constexpr float BOSS_ZONE_HEIGHT = 100.f;
+
+constexpr float BOSS_CHANGE_INTERVAL = 2.f;
+constexpr float BOSS_STIFFNESS_FACTOR = 8.0f; // коэффициент ускорения в сторону цели
+constexpr float BOSS_DAMPING = 4.0f; // коэффициент затухания скорости
+constexpr float BOSS_ARRIVAL_DIST = 15.0f; // Радиус покоя вокруг цели
+constexpr float BOSS_ARRIVAL_SPEED = 25.0f; //Максимальная скорость, при которой цель всё ещё считается достигнутой
