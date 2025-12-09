@@ -3,6 +3,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include "AsteroidSpawnSystem.hpp"
+#include "ExperienceSystem.hpp"
 #include "MovementSystem.hpp"
 #include "ShootSystem.hpp"
 #include "WaveSystem.hpp"
@@ -19,7 +20,7 @@ public:
 
     void render(sf::RenderWindow &window);
 
-    void reset();
+    void init();
 
     [[nodiscard]] float getPlayerHp() const;
 
@@ -48,6 +49,7 @@ private:
     MovementSystem movementSystem;
     ShootSystem shootSystem;
     AsteroidSpawnSystem asteroidSpawnSystem;
+    ExperienceSystem experienceSystem;
 
     // общее
     sf::RenderWindow &window;

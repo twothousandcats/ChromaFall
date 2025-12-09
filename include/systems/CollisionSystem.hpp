@@ -16,6 +16,7 @@ public:
         int destroyedAsteroidsCount = 0;
         std::vector<std::tuple<sf::Vector2f, sf::Vector2f, AsteroidSize> > asteroidsToSplit;
         bool isBossHit = false;
+        int expEarned = 0;
     };
 
     static Result update(

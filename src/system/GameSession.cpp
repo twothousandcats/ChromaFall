@@ -1,6 +1,8 @@
 #include "iostream"
 
 #include "systems/GameSession.hpp"
+
+#include "components/Experience.hpp"
 #include "systems/CollisionSystem.hpp"
 #include "systems/EntityCleanupSystem.hpp"
 #include "systems/PlayerControlSystem.hpp"
@@ -8,23 +10,28 @@
 
 #include "components/Health.hpp"
 #include "components/Invincibility.hpp"
+#include "components/Level.hpp"
 #include "components/Position.hpp"
 #include "components/Renderable.hpp"
 #include "components/TrapLaser.hpp"
+#include "config/LevelConfig.hpp"
 
 #include "config/PlayerConfig.hpp"
 #include "systems/InvincibilitySystem.hpp"
 
 GameSession::GameSession(sf::RenderWindow &window) : window(window) {
-    reset();
+    init();
 }
 
-void GameSession::reset() {
+void GameSession::init() {
     player = std::make_unique<Entity>();
     player->addComponent(std::make_unique<Position>());
     player->addComponent(std::make_unique<Renderable>(PLAYER_SIDE, PLAYER_SIDE, PLAYER_COLOR));
     player->addComponent(std::make_unique<Health>(PLAYER_BASE_HP));
     player->addComponent(std::make_unique<Invincibility>());
+    player->addComponent(std::make_unique<Experience>(LEVEL_START_EXP));
+    player->addComponent(std::make_unique<Level>(LEVEL_BASE));
+    // player->addComponent(std::make_unique<Upgrades>());
 
     bullets.clear();
     asteroids.clear();
@@ -101,10 +108,16 @@ void GameSession::update(
 
     auto result = CollisionSystem::update(*player, bullets, asteroids, boss, trapLasers);
 
+
+    experienceSystem.onAsteroidsDestroyed(result.destroyedAsteroidsCount);
     if (result.isBossHit) {
         auto *bossHealth = boss ? boss->getComponent<Health>() : nullptr;
         if (bossHealth && bossHealth->value <= 0.f) {
             boss.reset();
+            experienceSystem.onBossDefeated(
+                static_cast<BossType>(waveSystem.getCurrentWave() - 1)
+            );
+
             waveSystem.onBossDefeated();
         }
     }
@@ -118,6 +131,11 @@ void GameSession::update(
         );
     }
 
+
+    if (experienceSystem.processLevelUps(player.get())) {
+        // awaitingPowerUp = true;
+        // powerUpOptions = generateRandomPowerUps(3); // твоя функция выбора
+    }
     waveSystem.update(result.destroyedAsteroidsCount, dt);
 
     EntityCleanupSystem::cleanupBullets(bullets);
