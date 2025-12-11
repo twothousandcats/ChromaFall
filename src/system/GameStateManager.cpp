@@ -141,6 +141,7 @@ void GameStateManager::renderPowerUpOverlay(
         "Increases weapon damage by 30%",
         "Increases number of bullets per shot",
         "Increases attack speed by 25%",
+        "Unlocks Blaster",
         "Unlocks shotgun",
         "Unlocks laser"
     };
@@ -150,6 +151,7 @@ void GameStateManager::renderPowerUpOverlay(
         "+DMG",
         "+BLT",
         "+ASPD",
+        "Blaster",
         "Shotgun",
         "Laser"
     };

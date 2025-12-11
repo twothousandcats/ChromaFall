@@ -6,23 +6,32 @@
 #include "components/Health.hpp"
 
 std::vector<PowerUpType> PowerUpSystem::generateOptions(
-    int count
+    int count,
+    WeaponType currentWeapon
 ) {
     std::vector allOptions = {
         PowerUpType::EXTRA_HP,
         PowerUpType::EXTRA_DAMAGE,
         PowerUpType::EXTRA_BULLET,
         PowerUpType::SHOOTING_COOLDOWN,
-        PowerUpType::WEAPON_SHOTGUN,
-        PowerUpType::WEAPON_LASER
     };
+
+    if (currentWeapon != WeaponType::SHOTGUN) {
+        allOptions.push_back(PowerUpType::WEAPON_SHOTGUN);
+    }
+    if (currentWeapon != WeaponType::LASER) {
+        allOptions.push_back(PowerUpType::WEAPON_LASER);
+    }
+    if (currentWeapon != WeaponType::BLASTER) { // если используешь
+        allOptions.push_back(PowerUpType::WEAPON_BLASTER);
+    }
 
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(allOptions.begin(), allOptions.end(), g);
 
     if (count > static_cast<int>(allOptions.size())) {
-        count = allOptions.size();
+        count = static_cast<int>(allOptions.size());
     }
     return {allOptions.begin(), allOptions.begin() + count};
 }
@@ -56,6 +65,12 @@ void PowerUpSystem::apply(
             break;
         case PowerUpType::WEAPON_SHOTGUN:
             upgrades->weapon = WeaponType::SHOTGUN;
+            break;
+        case PowerUpType::WEAPON_LASER:
+            upgrades->weapon = WeaponType::LASER;
+            break;
+        case PowerUpType::WEAPON_BLASTER:
+            upgrades->weapon = WeaponType::BLASTER;
             break;
     }
 }

@@ -4,6 +4,7 @@
 
 #include "AsteroidSpawnSystem.hpp"
 #include "ExperienceSystem.hpp"
+#include "LaserSystem.hpp"
 #include "MovementSystem.hpp"
 #include "PowerUpSystem.hpp"
 #include "ShootSystem.hpp"
@@ -54,7 +55,7 @@ private:
     // сущности
     std::unique_ptr<Entity> player;
     // снаряды
-    std::unique_ptr<Entity> activeLaser;
+    std::unique_ptr<Entity> playerLaser; // ← переместить из временной переменной сюда
     std::vector<std::unique_ptr<Entity> > bullets;
     // противники
     std::vector<std::unique_ptr<Entity> > asteroids;
@@ -68,6 +69,7 @@ private:
     ShootSystem shootSystem;
     AsteroidSpawnSystem asteroidSpawnSystem;
     ExperienceSystem experienceSystem;
+    LaserSystem laserSystem;
 
     // общее
     sf::RenderWindow &window;

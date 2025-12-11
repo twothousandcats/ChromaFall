@@ -21,6 +21,7 @@ public:
 
     static Result update(
         Entity &player,
+        Entity *playerLaser,
         std::vector<std::unique_ptr<Entity> > &bullets,
         std::vector<std::unique_ptr<Entity> > &asteroids,
         std::unique_ptr<Entity> &boss,

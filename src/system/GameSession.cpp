@@ -56,28 +56,46 @@ void GameSession::update(
     if (playerPosition) {
         // настройка системы стрельбы в зависимости от изменений в системе улучшений
         if (auto *upgrades = player->getComponent<Upgrades>()) {
-            int bulletCount = DEFAULT_BULLETS_COUNT + upgrades->extraBulletCount;
-            float bulletDamage = BULLET_BASE_DMG * upgrades->damageMultiplier;
-            float spreadAngle = DEFAULT_BULLETS_SPREAD_FACTOR;
-            float shootingCooldown = SHOOTING_COOLDOWN * upgrades->shootingCooldown;
-            std::cout << "ShootingCooldownich: " << std::to_string(shootingCooldown) << std::endl;
-
-            if (upgrades->weapon == WeaponType::SHOTGUN) {
-                bulletCount = SHOTGUN_BULLETS_COUNT + upgrades->extraBulletCount;
-                spreadAngle = SHOTGUN_BULLETS_SPREAD_FACTOR;
-            } else if (upgrades->weapon == WeaponType::LASER) {
-                bulletCount = 0; // и обработай лазер в другом месте
+            if (upgrades->weapon != WeaponType::LASER) {
+                playerLaser.reset();
             }
 
-            shootSystem.update(
-                bullets,
-                window,
-                playerPosition->value,
-                bulletCount,
-                shootingCooldown,
-                bulletDamage,
-                spreadAngle
-            );
+            if (upgrades->weapon == WeaponType::LASER) {
+                bool isShooting = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+                float muzzleX = playerPosition->value.x - LASER_WIDTH / 2.f;
+                float muzzleY = playerPosition->value.y - PLAYER_SIDE / 2.f;
+                sf::Vector2f muzzlePos(muzzleX, muzzleY);
+                float laserDamage = LASER_BASE_DMG * upgrades->damageMultiplier; // 0.05 иначе имба
+                laserSystem.update(
+                    playerLaser,
+                    window,
+                    muzzlePos,
+                    isShooting,
+                    true,
+                    laserDamage,
+                    std::max(0.f, playerPosition->value.y)
+                );
+            } else {
+                int bulletCount = DEFAULT_BULLETS_COUNT + upgrades->extraBulletCount;
+                float bulletDamage = BULLET_BASE_DMG * upgrades->damageMultiplier;
+                float spreadAngle = DEFAULT_BULLETS_SPREAD_FACTOR;
+                float shootingCooldown = SHOOTING_COOLDOWN * upgrades->shootingCooldown;
+
+                if (upgrades->weapon == WeaponType::SHOTGUN) {
+                    bulletCount = SHOTGUN_BULLETS_COUNT + upgrades->extraBulletCount;
+                    spreadAngle = SHOTGUN_BULLETS_SPREAD_FACTOR;
+                }
+
+                shootSystem.update(
+                    bullets,
+                    window,
+                    playerPosition->value,
+                    bulletCount,
+                    shootingCooldown,
+                    bulletDamage,
+                    spreadAngle
+                );
+            }
         }
     }
 
@@ -128,8 +146,15 @@ void GameSession::update(
         trapLasers.clear();
     }
 
-    auto result = CollisionSystem::update(*player, bullets, asteroids, boss, trapLasers);
-
+    Entity *laserPtr = playerLaser ? playerLaser.get() : nullptr;
+    auto result = CollisionSystem::update(
+        *player,
+        laserPtr,
+        bullets,
+        asteroids,
+        boss,
+        trapLasers
+    );
 
     experienceSystem.onAsteroidsDestroyed(result.destroyedAsteroidsCount);
     if (result.isBossHit) {
@@ -153,10 +178,11 @@ void GameSession::update(
         );
     }
 
-
     if (experienceSystem.processLevelUps(player.get())) {
         overlayState = OverlayState::POWER_UP_SELECTION;
-        powerUpOptions = powerUpSystem.generateOptions(3);
+        if (auto *upgrades = player->getComponent<Upgrades>()) {
+            powerUpOptions = powerUpSystem.generateOptions(3, upgrades->weapon);
+        }
         selectedPowerUpIndex = 0;
     }
     waveSystem.update(result.destroyedAsteroidsCount, dt);
@@ -193,7 +219,9 @@ void GameSession::render(
             RenderSystem::render(window, {player.get()});
         }
     }
-
+    if (playerLaser) {
+        RenderSystem::render(window, {playerLaser.get()});
+    }
     RenderSystem::render(window, bullets);
     RenderSystem::render(window, asteroids);
     if (boss) {

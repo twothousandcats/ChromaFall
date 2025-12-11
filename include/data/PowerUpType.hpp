@@ -5,6 +5,7 @@ enum class PowerUpType {
     EXTRA_DAMAGE,
     EXTRA_BULLET,
     SHOOTING_COOLDOWN,
+    WEAPON_BLASTER,
     WEAPON_SHOTGUN,
     WEAPON_LASER,
 };

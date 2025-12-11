@@ -10,6 +10,7 @@
 #include "components/Renderable.hpp"
 #include "components/Velocity.hpp"
 #include "components/Invincibility.hpp"
+#include "components/LaserBeam.hpp"
 #include "components/TrapLaser.hpp"
 
 #include "config/SetupConfig.hpp"
@@ -59,6 +60,7 @@ float CollisionSystem::distanceFromPointToSegment(
 
 CollisionSystem::Result CollisionSystem::update(
     Entity &player,
+    Entity *playerLaser,
     std::vector<std::unique_ptr<Entity> > &bullets,
     std::vector<std::unique_ptr<Entity> > &asteroids,
     std::unique_ptr<Entity> &boss,
@@ -241,6 +243,83 @@ CollisionSystem::Result CollisionSystem::update(
                             playerInv->activate();
                         }
                         break;
+                    }
+                }
+            }
+        }
+    }
+
+    // playerLaser -> asteroids, boss
+    if (playerLaser) {
+        auto *laserPos = playerLaser->getComponent<Position>();
+        auto *laserRender = playerLaser->getComponent<Renderable>();
+        auto *laserDmg = playerLaser->getComponent<Damage>();
+
+        if (laserPos && laserRender && laserDmg) {
+            sf::Transform transform = laserRender->shape.getTransform();
+            sf::Vector2f localStart(0, 0);
+            sf::Vector2f localEnd(0, laserRender->shape.getSize().y);
+            sf::Vector2f laserStart = transform.transformPoint(localStart);
+            sf::Vector2f laserEnd = transform.transformPoint(localEnd);
+            float laserHalfWidth = laserRender->shape.getSize().x / 2.f;
+
+            // ateroids
+            for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end();) {
+                auto *asteroidPos = (*asteroidIt)->getComponent<Position>();
+                auto *asteroidRender = (*asteroidIt)->getComponent<Renderable>();
+                auto *asteroidHealth = (*asteroidIt)->getComponent<Health>();
+                auto *asteroidVelocity = (*asteroidIt)->getComponent<Velocity>();
+                auto *asteroidComp = (*asteroidIt)->getComponent<Asteroid>();
+
+                if (asteroidPos && asteroidRender && asteroidHealth && asteroidVelocity) {
+                    sf::Vector2f asteroidCenter = asteroidPos->value;
+                    float asteroidRadius = std::max(
+                                               asteroidRender->shape.getSize().x,
+                                               asteroidRender->shape.getSize().y
+                                           ) / 2.f;
+
+                    float distance = distanceFromPointToSegment(asteroidCenter, laserStart, laserEnd);
+                    if (distance <= asteroidRadius + laserHalfWidth) {
+                        // Попадание!
+                        asteroidHealth->value -= laserDmg->value;
+                        if (asteroidHealth->value <= 0.f) {
+                            if (asteroidComp) {
+                                result.asteroidsToSplit.emplace_back(
+                                    asteroidPos->value,
+                                    asteroidVelocity->value,
+                                    asteroidComp->size
+                                );
+                            }
+                            result.destroyedAsteroidsCount++;
+                            asteroidIt = asteroids.erase(asteroidIt);
+                        } else {
+                            ++asteroidIt;
+                        }
+                    } else {
+                        ++asteroidIt;
+                    }
+                } else {
+                    ++asteroidIt;
+                }
+            }
+
+            // boss
+            if (boss) {
+                auto *bossPos = boss->getComponent<Position>();
+                auto *bossRender = boss->getComponent<Renderable>();
+                auto *bossHealth = boss->getComponent<Health>();
+
+                if (bossPos && bossRender && bossHealth) {
+                    sf::Vector2f bossCenter = bossPos->value;
+                    float bossRadius = std::max(
+                                           bossRender->shape.getSize().x,
+                                           bossRender->shape.getSize().y
+                                       ) / 2.f;
+
+                    float distance = distanceFromPointToSegment(bossCenter, laserStart, laserEnd);
+                    if (distance <= bossRadius + laserHalfWidth) {
+                        bossHealth->value -= laserDmg->value;
+                        result.isBossHit = true;
                     }
                 }
             }
