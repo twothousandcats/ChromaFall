@@ -11,6 +11,7 @@
 #include "config/SetupConfig.hpp"
 #include "config/UIConfig.hpp"
 #include "data/AsteroidTemplate.hpp"
+#include "data/TextOrigin.hpp"
 #include "systems/GameSession.hpp"
 
 GameStateManager::GameStateManager(sf::RenderWindow &window)
@@ -66,7 +67,8 @@ sf::Text GameStateManager::createText(
     const sf::Font &font,
     const unsigned int charSize,
     const sf::Color &textColor,
-    const sf::Text::Style &textStyle
+    const sf::Text::Style &textStyle,
+    const TextOrigin origin
 ) {
     sf::Text text(font);
     text.setString(textContent);
@@ -76,7 +78,25 @@ sf::Text GameStateManager::createText(
     text.setStyle(textStyle);
 
     const sf::FloatRect textBounds = text.getLocalBounds();
-    text.setOrigin(textBounds.size / HALF_DIVISOR);
+    sf::Vector2f originPoint;
+    switch (origin) {
+        case TextOrigin::TOP_LEFT:
+            originPoint = {0.f, 0.f};
+            break;
+        case TextOrigin::TOP_RIGHT:
+            originPoint = {textBounds.size.x, 0};
+            break;
+        case TextOrigin::BOTTOM_LEFT:
+            originPoint = {0.f, textBounds.size.y};
+            break;
+        case TextOrigin::BOTTOM_RIGHT:
+            originPoint = {textBounds.size.x, textBounds.size.y};
+            break;
+        case TextOrigin::CENTER:
+            originPoint = textBounds.size / 2.f;
+            break;
+    }
+    text.setOrigin(originPoint);
     text.setPosition(position);
 
     return text;
@@ -109,6 +129,163 @@ std::pair<sf::RectangleShape, sf::Text> GameStateManager::createButton(
     return {buttonBg, buttonText};
 }
 
+void GameStateManager::renderPowerUpOverlay(
+    sf::RenderWindow &window
+) {
+    const auto &options = gameSession->getPowerUpOptions();
+    int selectedIndex = gameSession->getSelectedPowerUpIndex();
+
+    // Описания
+    const std::vector<std::string> descriptions = {
+        "Increases 1 max health points",
+        "Increases weapon damage by 30%",
+        "Increases number of bullets per shot",
+        "Increases attack speed by 25%",
+        "Unlocks shotgun",
+        "Unlocks laser"
+    };
+    // Усиления
+    const std::vector<std::string> labels = {
+        "+HP",
+        "+DMG",
+        "+BLT",
+        "+ASPD",
+        "Shotgun",
+        "Laser"
+    };
+
+    // рендер descField
+    if (selectedIndex >= 0 && selectedIndex < static_cast<int>(options.size())) {
+        PowerUpType selectedType = options[selectedIndex];
+        std::string descText = descriptions[static_cast<int>(selectedType)];
+
+        sf::RectangleShape desc(OVERLAY_DESC_FIELD_SIZE);
+        desc.setPosition(OVERLAY_DESC_FIELD_POS);
+        desc.setFillColor(OVERLAY_DESC_FIELD_BGC);
+        window.draw(desc);
+
+        sf::Text description = createText(
+            descText,
+            OVERLAY_DESC_TEXT_POS,
+            font,
+            OVERLAY_DESC_TEXT_FZ,
+            OVERLAY_DESC_TEXT_COLOR,
+            sf::Text::Bold,
+            TextOrigin::TOP_LEFT
+        );
+        window.draw(description);
+    }
+
+    // варианты
+    for (size_t i = 0; i < options.size(); ++i) {
+        sf::Color outlineColor = (i == static_cast<size_t>(selectedIndex))
+                                     ? OVERLAY_UPGRADE_BTN_BOR_COLOR_SELECTED
+                                     : OVERLAY_UPGRADE_BTN_BOR_COLOR_NORMAL;
+
+        sf::RectangleShape cell(OPTION_SIZE);
+        cell.setPosition({
+            OVERLAY_UPGRADE_BTN_BASE_POS_X + (OVERLAY_UPGRADE_BTN_GAP * i),
+            OVERLAY_UPGRADE_BTN_BASE_POS_Y
+        });
+        cell.setFillColor(OVERLAY_UPGRADE_BTN_BGC);
+        cell.setOutlineColor(outlineColor);
+        cell.setOutlineThickness(OVERLAY_UPGRADE_BTN_OUT_THICKNESS);
+        const sf::FloatRect cellBounds = cell.getLocalBounds();
+        cell.setOrigin(cellBounds.size / 2.f);
+        cell.setRotation(sf::degrees(45.f));
+        window.draw(cell);
+
+        sf::Text label = createText(
+            labels[static_cast<int>(options[i])],
+            {OVERLAY_UPGRADE_BTN_BASE_POS_X + (OVERLAY_UPGRADE_BTN_GAP * i), OVERLAY_UPGRADE_BTN_BASE_POS_Y},
+            font,
+            OVERLAY_UPGRADE_BTN_FZ,
+            OVERLAY_UPGRADE_BTN_FCOLOR,
+            sf::Text::Bold,
+            TextOrigin::CENTER
+        );
+        window.draw(label);
+    }
+
+    // hint
+    if (static_cast<int>(blinkClock.getElapsedTime().asSeconds() * 2) % 2 == 0) {
+        const sf::Text hint = createText(
+            "PRESS SPACE TO CONFIRM",
+            {WINDOW_CENTER_X, WINDOW_HEIGHT - static_cast<float>(OVERLAY_DESC_TEXT_FZ) - OVERLAY_PADDING},
+            font,
+            OVERLAY_DESC_TEXT_FZ,
+            OVERLAY_UPGRADE_BTN_FCOLOR,
+            sf::Text::Bold
+        );
+        window.draw(hint);
+    }
+}
+
+void GameStateManager::renderPauseOverlay(
+    sf::RenderWindow &window
+) {
+    sf::RectangleShape descOverlay(OVERLAY_MENU_SIZE);
+    descOverlay.setPosition(OVERLAY_MENU_POS);
+    descOverlay.setFillColor(OVERLAY_DESC_FIELD_BGC);
+    window.draw(descOverlay);
+
+    sf::Text title = createText(
+        "Pause",
+        {WINDOW_CENTER_X, OVERLAY_MENU_POS.y + OVERLAY_PADDING},
+        font,
+        OVERLAY_MENU_TITLE_FZ,
+        OVERLAY_MENU_TITLE_COLOR,
+        sf::Text::Bold
+    );
+    window.draw(title);
+
+    // Параметры кнопок
+    const sf::Vector2f firstButtonPos = {
+        WINDOW_CENTER_X,
+        OVERLAY_MENU_POS.y + OVERLAY_PADDING + OVERLAY_MENU_TITLE_FZ + (BASE_GAP + OVERLAY_OPTION_BTN_SIZE.y)
+    };
+
+    // Варианты паузы
+    std::vector<std::pair<std::string, PauseOption> > options = {
+        {"Resume", PauseOption::RESUME},
+        {"Main Menu", PauseOption::MAIN_MENU}
+    };
+
+    for (size_t i = 0; i < options.size(); ++i) {
+        const auto &[label, option] = options[i];
+        sf::Vector2f pos = {
+            firstButtonPos.x,
+            firstButtonPos.y + static_cast<float>(i) * (BASE_GAP + OVERLAY_OPTION_BTN_SIZE.y)
+        };
+        bool isSelected = (selectedPauseOption == option);
+
+        sf::Color fillColor = isSelected
+                                  ? OVERLAY_UPGRADE_BTN_BOR_COLOR_SELECTED
+                                  : sf::Color::Transparent;
+
+        // Фон кнопки (прозрачный, но при желании можно добавить подложку при наведении/выборе)
+        sf::RectangleShape buttonBg;
+        sf::Text buttonText = createText(
+            label,
+            pos,
+            font,
+            OVERLAY_UPGRADE_BTN_FZ,
+            OVERLAY_OPTION_NORMAL_COLOR,
+            sf::Text::Regular,
+            TextOrigin::CENTER
+        );
+
+        buttonBg.setSize(OVERLAY_OPTION_BTN_SIZE);
+        buttonBg.setFillColor(fillColor);
+        buttonBg.setOutlineColor(OVERLAY_UPGRADE_BTN_BOR_COLOR_SELECTED);
+        buttonBg.setOutlineThickness(2);
+        buttonBg.setPosition({pos.x - buttonBg.getSize().x / 2.f, pos.y - buttonBg.getSize().y / 2.f});
+
+        window.draw(buttonBg);
+        window.draw(buttonText);
+    }
+}
+
 void GameStateManager::switchToMainMenu() {
     currentState = GameState::MainMenu;
     gameSession.reset(); // отчистка
@@ -119,10 +296,70 @@ void GameStateManager::switchToGameplay() {
     gameSession = std::make_unique<GameSession>(window);
 }
 
+// TODO: какой-то страшный chain code выходит(спросить)
 void GameStateManager::handleEvents() {
     while (auto event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
             window.close();
+        } else if (currentState == GameState::Gameplay && gameSession) {
+            auto overlay = gameSession->getOverlayState();
+
+            if (event->is<sf::Event::KeyPressed>()) {
+                const auto &key = event->getIf<sf::Event::KeyPressed>()->code;
+                if (key == sf::Keyboard::Key::Escape) {
+                    if (overlay == OverlayState::PAUSE) {
+                        gameSession->setOverlayState(OverlayState::NONE);
+                    } else {
+                        gameSession->setOverlayState(OverlayState::PAUSE);
+                        selectedPauseOption = PauseOption::RESUME; // сброс выбора
+                    }
+                    continue;
+                }
+            }
+
+            if (overlay == OverlayState::POWER_UP_SELECTION) {
+                if (event->is<sf::Event::KeyPressed>()) {
+                    const auto &key = event->getIf<sf::Event::KeyPressed>()->code;
+                    if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A) {
+                        gameSession->selectPrevPowerUp();
+                    } else if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D) {
+                        gameSession->selectNextPowerUp();
+                    } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
+                        gameSession->confirmPowerUpSelection();
+                    }
+                }
+            } else if (overlay == OverlayState::PAUSE) {
+                if (event->is<sf::Event::KeyPressed>()) {
+                    const auto &key = event->getIf<sf::Event::KeyPressed>()->code;
+                    if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W) {
+                        selectedPauseOption = PauseOption::RESUME;
+                    } else if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S) {
+                        selectedPauseOption = PauseOption::MAIN_MENU;
+                    } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
+                        if (selectedPauseOption == PauseOption::RESUME) {
+                            gameSession->setOverlayState(OverlayState::NONE);
+                        } else {
+                            switchToMainMenu();
+                        }
+                    }
+                }
+                // Мышиный клик в паузе
+                else if (event->is<sf::Event::MouseButtonPressed>()) {
+                    const auto &mouse = event->getIf<sf::Event::MouseButtonPressed>();
+                    if (mouse->button == sf::Mouse::Button::Left) {
+                        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                        // Области клика — совпадают с текстом
+                        sf::FloatRect resumeRect({WINDOW_CENTER_X - 100, 285}, {200, 30});
+                        sf::FloatRect menuRect({WINDOW_CENTER_X - 100, 345}, {200, 30});
+
+                        if (resumeRect.contains(static_cast<sf::Vector2f>(mousePos))) {
+                            gameSession->setOverlayState(OverlayState::NONE);
+                        } else if (menuRect.contains(static_cast<sf::Vector2f>(mousePos))) {
+                            switchToMainMenu();
+                        }
+                    }
+                }
+            }
         } else if (currentState == GameState::MainMenu) {
             if (event->is<sf::Event::MouseButtonPressed>()) {
                 const auto &mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
@@ -199,6 +436,20 @@ void GameStateManager::render() {
             sf::Text::Regular
         );
         window.draw(hpText);
+
+        // определение оверлеев
+        if (gameSession->getOverlayState() != OverlayState::NONE) {
+            // Полупрозрачный фон
+            sf::RectangleShape overlayBg(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
+            overlayBg.setFillColor(OVERLAY_BGC);
+            window.draw(overlayBg);
+
+            if (gameSession->getOverlayState() == OverlayState::POWER_UP_SELECTION) {
+                renderPowerUpOverlay(window);
+            } else if (gameSession->getOverlayState() == OverlayState::PAUSE) {
+                renderPauseOverlay(window);
+            }
+        }
     } else if (currentState == GameState::Victory) {
         const sf::Text victoryText = createText(
             STATE_VICTORY_TEXT,

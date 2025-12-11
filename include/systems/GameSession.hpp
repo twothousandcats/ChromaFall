@@ -5,12 +5,15 @@
 #include "AsteroidSpawnSystem.hpp"
 #include "ExperienceSystem.hpp"
 #include "MovementSystem.hpp"
+#include "PowerUpSystem.hpp"
 #include "ShootSystem.hpp"
 #include "WaveSystem.hpp"
 #include "config/WaveConfig.hpp"
+#include "data/OverlayState.hpp"
 #include "entities/Entity.hpp"
-#include "systems/BossSystem.hpp"
-#include "systems/BossBehaviorSystem.hpp"
+
+enum class PowerUpType;
+enum class OverlayState;
 
 class GameSession {
 public:
@@ -21,6 +24,8 @@ public:
     void render(sf::RenderWindow &window);
 
     void init();
+
+    void setOverlayState(OverlayState state);
 
     [[nodiscard]] float getPlayerHp() const;
 
@@ -36,13 +41,22 @@ public:
         return waveSystem.isVictory();
     }
 
+    [[nodiscard]] OverlayState getOverlayState() const { return overlayState; }
+
+    // UI
+    [[nodiscard]] const std::vector<PowerUpType>& getPowerUpOptions() const { return powerUpOptions; }
+    [[nodiscard]] int getSelectedPowerUpIndex() const { return selectedPowerUpIndex; }
+    void selectNextPowerUp();
+    void selectPrevPowerUp();
+    void confirmPowerUpSelection();
+
 private:
     // сущности
     std::unique_ptr<Entity> player;
     std::vector<std::unique_ptr<Entity> > bullets;
     std::vector<std::unique_ptr<Entity> > asteroids;
     std::unique_ptr<Entity> boss;
-    std::vector<std::unique_ptr<Entity>> trapLasers;
+    std::vector<std::unique_ptr<Entity> > trapLasers;
 
     // системы
     WaveSystem waveSystem{TOTAL_WAVES, KILLS_TO_WAVE_UP};
@@ -56,4 +70,17 @@ private:
     sf::Clock gameClock;
 
     bool gameOver = false; // state
+
+    // powerup
+    PowerUpSystem powerUpSystem;
+    bool awaitingPowerUp = false;
+    std::vector<PowerUpType> currentPowerUpOptions;
+
+    // состяние
+    OverlayState overlayState = OverlayState::NONE;
+    bool wasInPowerUp = false; // чтобы вернуться после паузы
+
+    // PowerUpScreen
+    std::vector<PowerUpType> powerUpOptions;
+    int selectedPowerUpIndex = 0;
 };

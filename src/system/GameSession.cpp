@@ -14,9 +14,12 @@
 #include "components/Position.hpp"
 #include "components/Renderable.hpp"
 #include "components/TrapLaser.hpp"
+#include "components/Upgrades.hpp"
 #include "config/LevelConfig.hpp"
 
 #include "config/PlayerConfig.hpp"
+#include "systems/BossBehaviorSystem.hpp"
+#include "systems/BossSystem.hpp"
 #include "systems/InvincibilitySystem.hpp"
 
 GameSession::GameSession(sf::RenderWindow &window) : window(window) {
@@ -31,7 +34,7 @@ void GameSession::init() {
     player->addComponent(std::make_unique<Invincibility>());
     player->addComponent(std::make_unique<Experience>(LEVEL_START_EXP));
     player->addComponent(std::make_unique<Level>(LEVEL_BASE));
-    // player->addComponent(std::make_unique<Upgrades>());
+    player->addComponent(std::make_unique<Upgrades>());
 
     bullets.clear();
     asteroids.clear();
@@ -41,7 +44,8 @@ void GameSession::init() {
 void GameSession::update(
     const float dt
 ) {
-    if (gameOver) {
+    // конец игры/lvlup/pause
+    if (gameOver || overlayState != OverlayState::NONE) {
         return;
     }
 
@@ -133,8 +137,9 @@ void GameSession::update(
 
 
     if (experienceSystem.processLevelUps(player.get())) {
-        // awaitingPowerUp = true;
-        // powerUpOptions = generateRandomPowerUps(3); // твоя функция выбора
+        overlayState = OverlayState::POWER_UP_SELECTION;
+        powerUpOptions = powerUpSystem.generateOptions(3);
+        selectedPowerUpIndex = 0;
     }
     waveSystem.update(result.destroyedAsteroidsCount, dt);
 
@@ -177,4 +182,34 @@ void GameSession::render(
         RenderSystem::render(window, {boss.get()});
     }
     RenderSystem::render(window, trapLasers);
+}
+
+void GameSession::setOverlayState(OverlayState state) {
+    if (state == OverlayState::PAUSE && overlayState == OverlayState::POWER_UP_SELECTION) {
+        wasInPowerUp = true;
+    } else if (state == OverlayState::NONE && wasInPowerUp) {
+        overlayState = OverlayState::POWER_UP_SELECTION;
+        wasInPowerUp = false;
+        return;
+    }
+    overlayState = state;
+}
+
+void GameSession::selectNextPowerUp() {
+    if (overlayState == OverlayState::POWER_UP_SELECTION && !powerUpOptions.empty()) {
+        selectedPowerUpIndex = (selectedPowerUpIndex + 1) % powerUpOptions.size();
+    }
+}
+
+void GameSession::selectPrevPowerUp() {
+    if (overlayState == OverlayState::POWER_UP_SELECTION && !powerUpOptions.empty()) {
+        selectedPowerUpIndex = (selectedPowerUpIndex + powerUpOptions.size() - 1) % powerUpOptions.size();
+    }
+}
+
+void GameSession::confirmPowerUpSelection() {
+    if (overlayState == OverlayState::POWER_UP_SELECTION && !powerUpOptions.empty()) {
+        powerUpSystem.apply(player.get(), powerUpOptions[selectedPowerUpIndex]);
+        overlayState = OverlayState::NONE;
+    }
 }

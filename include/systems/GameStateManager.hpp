@@ -7,9 +7,13 @@
 #include <vector>
 
 #include "ShootSystem.hpp"
+#include "data/TextOrigin.hpp"
 
+enum class TextOrigin;
 class Entity;
 class GameSession;
+
+enum class PauseOption { RESUME, MAIN_MENU };
 
 /**
  * Система управления состояниями программы
@@ -33,13 +37,22 @@ private:
 
     void switchToGameplay();
 
+    void renderPowerUpOverlay(
+        sf::RenderWindow &window
+    );
+
+    void renderPauseOverlay(
+        sf::RenderWindow &window
+    );
+
     static sf::Text createText(
         const std::string &textContent,
         const sf::Vector2f &positionCenter,
         const sf::Font &font,
         unsigned int charSize,
         const sf::Color &textColor,
-        const sf::Text::Style &textStyle = sf::Text::Bold
+        const sf::Text::Style &textStyle = sf::Text::Bold,
+        const TextOrigin origin = TextOrigin::CENTER
     );
 
     static std::pair<sf::RectangleShape, sf::Text> createButton(
@@ -64,7 +77,11 @@ private:
     std::optional<sf::Text> exitText;
     sf::RectangleShape exitButton;
 
+    // UI pause
+    PauseOption selectedPauseOption = PauseOption::RESUME;
+
     std::unique_ptr<GameSession> gameSession;
     sf::Clock gameClock;
     sf::Clock infoClock;
+    sf::Clock blinkClock;
 };
