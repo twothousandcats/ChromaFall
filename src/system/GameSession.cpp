@@ -54,13 +54,31 @@ void GameSession::update(
     PlayerControlSystem::update(*player, window);
     auto *playerPosition = player->getComponent<Position>();
     if (playerPosition) {
-        shootSystem.update(
-            bullets,
-            window,
-            playerPosition->value,
-            DEFAULT_BULLETS_COUNT,
-            DEFAULT_BULLETS_SPREAD_FACTOR
-        );
+        // настройка системы стрельбы в зависимости от изменений в системе улучшений
+        if (auto *upgrades = player->getComponent<Upgrades>()) {
+            int bulletCount = DEFAULT_BULLETS_COUNT + upgrades->extraBulletCount;
+            float bulletDamage = BULLET_BASE_DMG * upgrades->damageMultiplier;
+            float spreadAngle = DEFAULT_BULLETS_SPREAD_FACTOR;
+            float shootingCooldown = SHOOTING_COOLDOWN * upgrades->shootingCooldown;
+            std::cout << "ShootingCooldownich: " << std::to_string(shootingCooldown) << std::endl;
+
+            if (upgrades->weapon == WeaponType::SHOTGUN) {
+                bulletCount = SHOTGUN_BULLETS_COUNT + upgrades->extraBulletCount;
+                spreadAngle = SHOTGUN_BULLETS_SPREAD_FACTOR;
+            } else if (upgrades->weapon == WeaponType::LASER) {
+                bulletCount = 0; // и обработай лазер в другом месте
+            }
+
+            shootSystem.update(
+                bullets,
+                window,
+                playerPosition->value,
+                bulletCount,
+                shootingCooldown,
+                bulletDamage,
+                spreadAngle
+            );
+        }
     }
 
     movementSystem.update(bullets, dt);

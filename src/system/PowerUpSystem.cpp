@@ -12,6 +12,7 @@ std::vector<PowerUpType> PowerUpSystem::generateOptions(
         PowerUpType::EXTRA_HP,
         PowerUpType::EXTRA_DAMAGE,
         PowerUpType::EXTRA_BULLET,
+        PowerUpType::SHOOTING_COOLDOWN,
         PowerUpType::WEAPON_SHOTGUN,
         PowerUpType::WEAPON_LASER
     };
@@ -45,16 +46,16 @@ void PowerUpSystem::apply(
             health->value += upgrades->extraMaxHp;
             break;
         case PowerUpType::EXTRA_DAMAGE:
-            upgrades->damageMultiplier += 0.2f;
+            upgrades->damageMultiplier *= POWERUP_DMG_MULT;
             break;
         case PowerUpType::EXTRA_BULLET:
-            upgrades->extraBulletCount += 1;
+            upgrades->extraBulletCount += POWERUP_BULLET_ADD;
+            break;
+        case PowerUpType::SHOOTING_COOLDOWN:
+            upgrades->shootingCooldown *= POWERUP_SHOOTING_COOLDOWN_MULT;
             break;
         case PowerUpType::WEAPON_SHOTGUN:
-            upgrades->weapon = WeaponType::Shotgun;
-            break;
-        case PowerUpType::WEAPON_LASER:
-            upgrades->weapon = WeaponType::Laser;
+            upgrades->weapon = WeaponType::SHOTGUN;
             break;
     }
 }

@@ -1,6 +1,7 @@
 #include "systems/ShootSystem.hpp"
 
 #include "components/Bullet.hpp"
+#include "components/Damage.hpp"
 #include "components/Position.hpp"
 #include "components/Renderable.hpp"
 #include "components/Velocity.hpp"
@@ -16,40 +17,49 @@ void ShootSystem::update(
     const sf::RenderWindow &window,
     const sf::Vector2f &playerPosition,
     int bulletsCount,
-    float spreadAngle // TODO: при реализации разброса (конфиг пуль)
+    float shootingCooldown,
+    float damage,
+    float spreadAngle
 ) {
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
         return;
     }
 
-    if (shootClock.getElapsedTime().asSeconds() < SHOOTING_COOLDOWN) {
+    if (shootClock.getElapsedTime().asSeconds() < shootingCooldown) {
         return;
     }
-    float baseX = playerPosition.x + PLAYER_SIDE / HALF_DIVISOR  - BULLET_WIDTH / HALF_DIVISOR;
-    float baseY = playerPosition.y - BULLET_HEIGHT;
+
+    float muzzleX = playerPosition.x + PLAYER_SIDE / HALF_DIVISOR - BULLET_WIDTH / HALF_DIVISOR;
+    float muzzleY = playerPosition.y;
 
     for (int i = 0; i < bulletsCount; ++i) {
-        // bullet creation
         auto bullet = std::make_unique<Entity>();
+        bullet->addComponent(std::make_unique<Damage>(damage));
 
-        float offsetX = 0.f;
+        float angleRad = -M_PI_2;
+
         if (bulletsCount > 1) {
-            offsetX = (i - (bulletsCount - 1) / HALF_DIVISOR) * 15.f; // TODO: при реализации разброса (конфиг пуль)
+            // spread/2
+            float halfSpreadRad = sf::degrees(spreadAngle / HALF_DIVISOR).asRadians();
+            float angleStep = (HALF_DIVISOR * halfSpreadRad) / (bulletsCount - 1);
+            float currentAngle = -halfSpreadRad + i * angleStep;
+            angleRad += currentAngle;
         }
 
-        float bulletX = baseX + offsetX;
-        float bulletY = baseY;
-        bullet->addComponent(std::make_unique<Position>(bulletX, bulletY)); // определяем компонент позиции для пули
-        // определяем компоненту постоянной скорости
-        bullet->addComponent(std::make_unique<Velocity>(BULLET_VELOCITY_TRACE.x, -BULLET_VELOCITY_TRACE.y));
+        bullet->addComponent(std::make_unique<Position>(muzzleX, muzzleY - BULLET_HEIGHT));
 
-        // рендеринг пули
+        sf::Vector2f velocity(
+            std::cos(angleRad) * BULLET_SPEED,
+            std::sin(angleRad) * BULLET_SPEED
+        );
+        bullet->addComponent(std::make_unique<Velocity>(velocity.x, velocity.y));
+
+        // Рендер
         auto renderable = std::make_unique<Renderable>();
         renderable->shape.setSize(BULLET_SIZE);
         renderable->shape.setFillColor(BULLET_COLOR);
         bullet->addComponent(std::move(renderable));
 
-        // Маркер
         bullet->addComponent(std::make_unique<Bullet>());
         bullets.push_back(std::move(bullet));
     }

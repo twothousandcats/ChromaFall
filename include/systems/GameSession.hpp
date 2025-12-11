@@ -53,9 +53,13 @@ public:
 private:
     // сущности
     std::unique_ptr<Entity> player;
+    // снаряды
+    std::unique_ptr<Entity> activeLaser;
     std::vector<std::unique_ptr<Entity> > bullets;
+    // противники
     std::vector<std::unique_ptr<Entity> > asteroids;
     std::unique_ptr<Entity> boss;
+    // ловушки
     std::vector<std::unique_ptr<Entity> > trapLasers;
 
     // системы

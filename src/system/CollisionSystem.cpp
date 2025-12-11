@@ -4,6 +4,7 @@
 #include <SFML/System/Vector2.hpp>
 
 #include "components/Asteroid.hpp"
+#include "components/Damage.hpp"
 #include "components/Health.hpp"
 #include "components/Position.hpp"
 #include "components/Renderable.hpp"
@@ -69,9 +70,10 @@ CollisionSystem::Result CollisionSystem::update(
     for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
         auto *bulletPos = (*bulletIt)->getComponent<Position>();
         auto *bulletRender = (*bulletIt)->getComponent<Renderable>();
+        auto *bulletDmg = (*bulletIt)->getComponent<Damage>();
         bool bulletHit = false;
 
-        if (bulletPos && bulletRender) {
+        if (bulletPos && bulletRender && bulletDmg) {
             sf::Vector2f bulletSize = bulletRender->shape.getSize();
 
             for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end();) {
@@ -89,7 +91,7 @@ CollisionSystem::Result CollisionSystem::update(
                         bulletSize,
                         asteroidSize
                     )) {
-                        asteroidHealth->value -= 1.f;
+                        asteroidHealth->value -= bulletDmg->value;
                         bulletHit = true;
 
                         if (asteroidHealth->value <= 0.f) {
@@ -176,11 +178,12 @@ CollisionSystem::Result CollisionSystem::update(
             for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
                 auto *bulletPos = (*bulletIt)->getComponent<Position>();
                 auto *bulletRender = (*bulletIt)->getComponent<Renderable>();
+                auto *bulletDmg = (*bulletIt)->getComponent<Damage>();
 
                 if (bulletPos && bulletRender) {
                     if (isIntersects(bulletPos->value, bossPos->value,
                                      bulletRender->shape.getSize(), bossSize)) {
-                        bossHealth->value -= 1.f;
+                        bossHealth->value -= bulletDmg->value;
                         result.isBossHit = true;
                         bulletIt = bullets.erase(bulletIt);
                         break;

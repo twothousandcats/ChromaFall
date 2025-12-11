@@ -343,22 +343,6 @@ void GameStateManager::handleEvents() {
                         }
                     }
                 }
-                // Мышиный клик в паузе
-                else if (event->is<sf::Event::MouseButtonPressed>()) {
-                    const auto &mouse = event->getIf<sf::Event::MouseButtonPressed>();
-                    if (mouse->button == sf::Mouse::Button::Left) {
-                        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                        // Области клика — совпадают с текстом
-                        sf::FloatRect resumeRect({WINDOW_CENTER_X - 100, 285}, {200, 30});
-                        sf::FloatRect menuRect({WINDOW_CENTER_X - 100, 345}, {200, 30});
-
-                        if (resumeRect.contains(static_cast<sf::Vector2f>(mousePos))) {
-                            gameSession->setOverlayState(OverlayState::NONE);
-                        } else if (menuRect.contains(static_cast<sf::Vector2f>(mousePos))) {
-                            switchToMainMenu();
-                        }
-                    }
-                }
             }
         } else if (currentState == GameState::MainMenu) {
             if (event->is<sf::Event::MouseButtonPressed>()) {
