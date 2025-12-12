@@ -20,6 +20,7 @@
 #include <random>
 
 #include "components/Acceleration.hpp"
+#include "components/BossSpawnedAsteroid.hpp"
 #include "config/PlayerConfig.hpp"
 #include "config/SetupConfig.hpp"
 #include "config/TrapLaserConfig.hpp"
@@ -44,6 +45,7 @@ void BossBehaviorSystem::spawnUpwardAsteroids(
         float speed = baseSpeed;
 
         auto asteroid = std::make_unique<Entity>();
+        asteroid->addComponent(std::make_unique<BossSpawnedAsteroid>()); // маркер астероид босса
         asteroid->addComponent(std::make_unique<Position>(origin.x, origin.y));
         asteroid->addComponent(std::make_unique<Velocity>(
             std::cos(angle) * speed,

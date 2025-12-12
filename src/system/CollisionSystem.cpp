@@ -4,6 +4,7 @@
 #include <SFML/System/Vector2.hpp>
 
 #include "components/Asteroid.hpp"
+#include "components/BossSpawnedAsteroid.hpp"
 #include "components/Damage.hpp"
 #include "components/Health.hpp"
 #include "components/Position.hpp"
@@ -83,6 +84,7 @@ CollisionSystem::Result CollisionSystem::update(
                 auto *asteroidRender = (*asteroidIt)->getComponent<Renderable>();
                 auto *asteroidHealth = (*asteroidIt)->getComponent<Health>();
                 auto *asteroidVelocity = (*asteroidIt)->getComponent<Velocity>();
+                auto *isBossAsteroid = (*asteroidIt)->getComponent<BossSpawnedAsteroid>();
 
                 if (asteroidPos && asteroidRender && asteroidHealth && asteroidVelocity) {
                     sf::Vector2f asteroidSize = asteroidRender->shape.getSize();
@@ -106,7 +108,9 @@ CollisionSystem::Result CollisionSystem::update(
                                 );
                             }
 
-                            result.destroyedAsteroidsCount++;
+                            if (!isBossAsteroid) {
+                                result.destroyedAsteroidsCount++;
+                            }
                             asteroidIt = asteroids.erase(asteroidIt);
                         } else {
                             ++asteroidIt;
@@ -270,6 +274,7 @@ CollisionSystem::Result CollisionSystem::update(
                 auto *asteroidHealth = (*asteroidIt)->getComponent<Health>();
                 auto *asteroidVelocity = (*asteroidIt)->getComponent<Velocity>();
                 auto *asteroidComp = (*asteroidIt)->getComponent<Asteroid>();
+                auto *isBossAsteroid = (*asteroidIt)->getComponent<BossSpawnedAsteroid>();
 
                 if (asteroidPos && asteroidRender && asteroidHealth && asteroidVelocity) {
                     sf::Vector2f asteroidCenter = asteroidPos->value;
@@ -290,7 +295,10 @@ CollisionSystem::Result CollisionSystem::update(
                                     asteroidComp->size
                                 );
                             }
-                            result.destroyedAsteroidsCount++;
+
+                            if (!isBossAsteroid) {
+                                result.destroyedAsteroidsCount++;
+                            }
                             asteroidIt = asteroids.erase(asteroidIt);
                         } else {
                             ++asteroidIt;
