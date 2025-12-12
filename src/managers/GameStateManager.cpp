@@ -1,4 +1,4 @@
-#include "systems/GameStateManager.hpp"
+#include "managers/GameStateManager.hpp"
 
 #include "entities/Entity.hpp"
 #include "components/Position.hpp"
@@ -12,7 +12,7 @@
 #include "config/UIConfig.hpp"
 #include "data/AsteroidTemplate.hpp"
 #include "data/TextOrigin.hpp"
-#include "systems/GameSession.hpp"
+#include "managers/GameSession.hpp"
 
 GameStateManager::GameStateManager(sf::RenderWindow &window)
     : window(window) {
@@ -60,7 +60,6 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
 
 GameStateManager::~GameStateManager() = default;
 
-// todo: решить вопрос с origin type
 sf::Text GameStateManager::createText(
     const std::string &textContent,
     const sf::Vector2f &position,
@@ -265,7 +264,7 @@ void GameStateManager::renderPauseOverlay(
                                   ? OVERLAY_UPGRADE_BTN_BOR_COLOR_SELECTED
                                   : sf::Color::Transparent;
 
-        // Фон кнопки (прозрачный, но при желании можно добавить подложку при наведении/выборе)
+        // Фон кнопки
         sf::RectangleShape buttonBg;
         sf::Text buttonText = createText(
             label,
@@ -280,7 +279,7 @@ void GameStateManager::renderPauseOverlay(
         buttonBg.setSize(OVERLAY_OPTION_BTN_SIZE);
         buttonBg.setFillColor(fillColor);
         buttonBg.setOutlineColor(OVERLAY_UPGRADE_BTN_BOR_COLOR_SELECTED);
-        buttonBg.setOutlineThickness(2);
+        buttonBg.setOutlineThickness(OVERLAY_UPGRADE_BTN_OUT_THICKNESS);
         buttonBg.setPosition({pos.x - buttonBg.getSize().x / 2.f, pos.y - buttonBg.getSize().y / 2.f});
 
         window.draw(buttonBg);
@@ -405,21 +404,23 @@ void GameStateManager::render() {
         const sf::Text waveText = createText(
             "Wave: " + std::to_string(gameSession->getCurrentWave()) + " / " + std::to_string(
                 gameSession->getTotalWaves()),
-            {WINDOW_WIDTH - 130.f, WINDOW_HEIGHT - TITLE_FONT_SIZE},
+            INFO_WAVE_POS,
             font,
-            TITLE_FONT_SIZE,
+            INFO_FZ,
             INFO_TEXT_COLOR,
-            sf::Text::Regular
+            sf::Text::Regular,
+            TextOrigin::BOTTOM_RIGHT
         );
         window.draw(waveText);
 
         const sf::Text hpText = createText(
             "HP: " + std::to_string(static_cast<int>(gameSession->getPlayerHp())),
-            {70.f, WINDOW_HEIGHT - TITLE_FONT_SIZE},
+            INFO_HP_POS,
             font,
-            TITLE_FONT_SIZE,
+            INFO_FZ,
             INFO_TEXT_COLOR,
-            sf::Text::Regular
+            sf::Text::Regular,
+            TextOrigin::BOTTOM_LEFT
         );
         window.draw(hpText);
 

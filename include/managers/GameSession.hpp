@@ -2,13 +2,13 @@
 #include <random>
 #include <SFML/Graphics/RenderWindow.hpp>
 
-#include "AsteroidSpawnSystem.hpp"
-#include "ExperienceSystem.hpp"
-#include "LaserSystem.hpp"
-#include "MovementSystem.hpp"
-#include "PowerUpSystem.hpp"
-#include "ShootSystem.hpp"
-#include "WaveSystem.hpp"
+#include "../systems/AsteroidSpawnSystem.hpp"
+#include "../systems/ExperienceSystem.hpp"
+#include "../systems/LaserSystem.hpp"
+#include "../systems/MovementSystem.hpp"
+#include "../systems/PowerUpSystem.hpp"
+#include "../systems/ShootSystem.hpp"
+#include "../systems/WaveSystem.hpp"
 #include "config/WaveConfig.hpp"
 #include "data/OverlayState.hpp"
 #include "entities/Entity.hpp"

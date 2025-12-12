@@ -1,5 +1,5 @@
 #include <SFML/Graphics.hpp>
-#include "../include/systems/GameStateManager.hpp"
+#include "managers/GameStateManager.hpp"
 #include "config/SetupConfig.hpp"
 
 int main() {

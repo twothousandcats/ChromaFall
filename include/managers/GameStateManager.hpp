@@ -6,7 +6,7 @@
 #include <random>
 #include <vector>
 
-#include "ShootSystem.hpp"
+#include "../systems/ShootSystem.hpp"
 #include "data/TextOrigin.hpp"
 
 enum class TextOrigin;
@@ -22,7 +22,7 @@ class GameStateManager {
 public:
     explicit GameStateManager(sf::RenderWindow &window);
 
-    ~GameStateManager(); // деструктор
+    ~GameStateManager();
 
     void handleEvents();
 

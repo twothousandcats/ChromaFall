@@ -1,6 +1,6 @@
 #include "iostream"
 
-#include "systems/GameSession.hpp"
+#include "../../include/managers/GameSession.hpp"
 
 #include "components/Experience.hpp"
 #include "systems/CollisionSystem.hpp"

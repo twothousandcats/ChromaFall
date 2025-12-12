@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SFML/Graphics.hpp"
+#include "config/SetupConfig.hpp"
 
 // TITLE
 // typograph
@@ -73,6 +74,14 @@ constexpr sf::Vector2f OVERLAY_OPTION_BTN_SIZE = {300.f, 60.f};
 
 // info
 constexpr sf::Color INFO_TEXT_COLOR = sf::Color::White;
+constexpr float INFO_PADDING = 20.f;
+constexpr int INFO_FZ = 24;
+
+// hp
+constexpr sf::Vector2f INFO_HP_POS = {INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING};
+
+// wave
+constexpr sf::Vector2f INFO_WAVE_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING};
 
 // BASE
 const std::string BASE_FONT_REGULAR = "assets/fonts/Orbitron-Regular.ttf";
