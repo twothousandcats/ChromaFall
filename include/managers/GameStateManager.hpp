@@ -85,4 +85,8 @@ private:
     sf::Clock gameClock;
     sf::Clock infoClock;
     sf::Clock blinkClock;
+
+    // hp
+    sf::Texture hpTexture;
+    std::optional<sf::Sprite> hpSprite;
 };

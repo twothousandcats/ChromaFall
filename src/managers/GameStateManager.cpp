@@ -56,6 +56,12 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
     );
     exitButton = std::move(exitBg);
     exitText = std::move(exitTxt);
+
+    if (hpTexture.loadFromFile(BASE_HEART)) {
+        hpSprite.emplace(hpTexture);
+    } else {
+        exit(1);
+    }
 }
 
 GameStateManager::~GameStateManager() = default;
@@ -413,16 +419,36 @@ void GameStateManager::render() {
         );
         window.draw(waveText);
 
-        const sf::Text hpText = createText(
-            "HP: " + std::to_string(static_cast<int>(gameSession->getPlayerHp())),
-            INFO_HP_POS,
-            font,
-            INFO_FZ,
-            INFO_TEXT_COLOR,
-            sf::Text::Regular,
-            TextOrigin::BOTTOM_LEFT
-        );
-        window.draw(hpText);
+        // hp
+        if (hpSprite.has_value()) {
+            const auto spriteSize = static_cast<float>(hpSprite->getTextureRect().size.y);
+            hpSprite->setPosition({INFO_HP_POS_X, INFO_HP_POS_Y});
+            hpSprite->setOrigin({0.f, spriteSize});
+            window.draw(*hpSprite);
+
+            const sf::Text hpText = createText(
+                std::to_string(static_cast<int>(gameSession->getPlayerHp())),
+                {INFO_HP_POS_X + INFO_PADDING / 2.f + spriteSize, INFO_HP_POS_Y - INFO_FZ / 2.f},
+                font,
+                INFO_FZ,
+                INFO_TEXT_COLOR,
+                sf::Text::Regular,
+                TextOrigin::BOTTOM_LEFT
+            );
+            window.draw(hpText);
+
+            sf::RectangleShape hpBar;
+            float sizeX = spriteSize + hpText.getLocalBounds().size.x + INFO_PADDING * 2.f + INFO_FZ / 2.f;
+            float sizeY = hpText.getLocalBounds().size.x + INFO_PADDING * 2.f + INFO_FZ / 2.f;
+            float posX = 0.f;
+            float posY = WINDOW_HEIGHT - sizeY;
+            hpBar.setPosition({posX, posY});
+            hpBar.setFillColor(sf::Color::Transparent);
+            hpBar.setOutlineColor(INFO_HP_BORDER_COLOR);
+            hpBar.setOutlineThickness(INFO_HP_BORDER_WIDTH);
+            hpBar.setSize({sizeX, sizeY});
+            window.draw(hpBar);
+        }
 
         // определение оверлеев
         if (gameSession->getOverlayState() != OverlayState::NONE) {
