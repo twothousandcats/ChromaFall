@@ -9,6 +9,7 @@
 #include "../systems/PowerUpSystem.hpp"
 #include "../systems/ShootSystem.hpp"
 #include "../systems/WaveSystem.hpp"
+#include "config/SetupConfig.hpp"
 #include "config/WaveConfig.hpp"
 #include "data/OverlayState.hpp"
 #include "entities/Entity.hpp"
@@ -89,4 +90,10 @@ private:
     // PowerUpScreen
     std::vector<PowerUpType> powerUpOptions;
     int selectedPowerUpIndex = 0;
+
+    // background
+    sf::Texture bgTexture;
+    std::optional<sf::Sprite> bgSprite; // спрайт не может существовать без текстуры
+    float currentScrollOffset = 0.f;
+    const float totalBgHeight = WINDOW_HEIGHT * 2.0f;
 };

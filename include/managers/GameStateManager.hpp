@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "../systems/ShootSystem.hpp"
+#include "config/SetupConfig.hpp"
 #include "data/TextOrigin.hpp"
 
 enum class TextOrigin;

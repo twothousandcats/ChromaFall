@@ -18,12 +18,24 @@
 #include "config/LevelConfig.hpp"
 
 #include "config/PlayerConfig.hpp"
+#include "config/UIConfig.hpp"
 #include "systems/BossBehaviorSystem.hpp"
 #include "systems/BossSystem.hpp"
 #include "systems/InvincibilitySystem.hpp"
 
 GameSession::GameSession(sf::RenderWindow &window) : window(window) {
     init();
+
+    if (bgTexture.loadFromFile(BASE_BACKGROUND)) {
+        bgSprite.emplace(bgTexture);
+        // масштаб
+        bgSprite->setScale({
+            static_cast<float>(WINDOW_WIDTH) / static_cast<float>(bgTexture.getSize().x),
+            static_cast<float>(WINDOW_HEIGHT * 2) / static_cast<float>(bgTexture.getSize().y)
+        });
+    } else {
+        exit(1);
+    }
 }
 
 void GameSession::init() {
@@ -47,6 +59,11 @@ void GameSession::update(
     // конец игры/lvlup/pause
     if (gameOver || overlayState != OverlayState::NONE) {
         return;
+    }
+
+    currentScrollOffset += WINDOW_SCROLL_SPEED * dt;
+    if (currentScrollOffset >= totalBgHeight) {
+        currentScrollOffset -= totalBgHeight;
     }
 
     // таймер неуязвимости
@@ -206,6 +223,16 @@ float GameSession::getPlayerHp() const {
 void GameSession::render(
     sf::RenderWindow &window
 ) {
+    if (bgSprite.has_value()) {
+        bgSprite->setPosition({0, -currentScrollOffset});
+        window.draw(*bgSprite);
+
+        // сшиваем
+        sf::Sprite second = *bgSprite;
+        second.setPosition({0, -currentScrollOffset + totalBgHeight});
+        window.draw(second);
+    }
+
     if (player) {
         bool shouldDraw = true;
 

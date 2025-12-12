@@ -17,5 +17,8 @@ constexpr sf::Vector2f WINDOW_CENTER = {WINDOW_CENTER_X, WINDOW_CENTER_Y};
 // FPS
 constexpr int FRAMES_PER_SECOND = 60;
 
+// bg
+constexpr float WINDOW_SCROLL_SPEED = -20.f;
+
 // CLOCK
 constexpr float DT_COMPENSATE_FACTOR = 0.1f;
