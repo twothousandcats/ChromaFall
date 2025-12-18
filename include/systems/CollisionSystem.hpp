@@ -5,6 +5,7 @@
 #include <SFML/System/Vector2.hpp>
 
 #include "data/AsteroidSize.hpp"
+#include "data/PowerUpType.hpp"
 
 class Entity;
 
@@ -15,6 +16,8 @@ public:
         bool isPlayerDied = false;
         int destroyedAsteroidsCount = 0;
         std::vector<std::tuple<sf::Vector2f, sf::Vector2f, AsteroidSize> > asteroidsToSplit;
+        std::vector<sf::Vector2f> destroyedAsteroidPositions;
+        std::vector<PowerUpType> collectedPowerUps;
         bool isBossHit = false;
         int expEarned = 0;
     };
@@ -25,7 +28,8 @@ public:
         std::vector<std::unique_ptr<Entity> > &bullets,
         std::vector<std::unique_ptr<Entity> > &asteroids,
         std::unique_ptr<Entity> &boss,
-        const std::vector<std::unique_ptr<Entity> > &trapLasers
+        const std::vector<std::unique_ptr<Entity> > &trapLasers,
+    std::vector<std::unique_ptr<Entity>>& powerUpPickups
     );
 
 private:

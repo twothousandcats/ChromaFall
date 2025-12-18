@@ -11,3 +11,9 @@ constexpr float UPGRADES_BASE_SHOOTING_COOLDOWN_MULT = 1.f;
 constexpr float POWERUP_DMG_MULT = 1.3f;
 constexpr float POWERUP_SHOOTING_COOLDOWN_MULT = 0.8f;
 constexpr int POWERUP_BULLET_ADD = 1;
+
+
+// DROP POWERUP
+constexpr float POWER_UP_DROP_CHANCE_PERCENT = 100.0f; // 5%
+constexpr float POWER_UP_PICKUP_RADIUS = 12.f; // size
+constexpr float POWER_UP_DROP_SPEED = 100.f; // speed

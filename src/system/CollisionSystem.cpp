@@ -12,11 +12,16 @@
 #include "components/Velocity.hpp"
 #include "components/Invincibility.hpp"
 #include "components/LaserBeam.hpp"
+#include "components/PowerUpPickup.hpp"
 #include "components/TrapLaser.hpp"
 
 #include "config/SetupConfig.hpp"
+#include "config/UpgradesConfig.hpp"
 
 #include "entities/Entity.hpp"
+
+// TODO: РЕФАКТО
+struct PowerUpPickup;
 
 bool CollisionSystem::isIntersects(
     const sf::Vector2f &aPos,
@@ -65,7 +70,8 @@ CollisionSystem::Result CollisionSystem::update(
     std::vector<std::unique_ptr<Entity> > &bullets,
     std::vector<std::unique_ptr<Entity> > &asteroids,
     std::unique_ptr<Entity> &boss,
-    const std::vector<std::unique_ptr<Entity> > &trapLasers
+    const std::vector<std::unique_ptr<Entity> > &trapLasers,
+    std::vector<std::unique_ptr<Entity>>& powerUpPickups
 ) {
     Result result;
 
@@ -100,15 +106,14 @@ CollisionSystem::Result CollisionSystem::update(
 
                         if (asteroidHealth->value <= 0.f) {
                             auto *asteroidComp = (*asteroidIt)->getComponent<Asteroid>();
-                            if (asteroidComp) {
+
+                            if (!isBossAsteroid && asteroidComp) {
                                 result.asteroidsToSplit.emplace_back(
                                     asteroidPos->value,
                                     asteroidVelocity->value,
                                     asteroidComp->size
                                 );
-                            }
-
-                            if (!isBossAsteroid) {
+                                result.destroyedAsteroidPositions.push_back(asteroidPos->value);
                                 result.destroyedAsteroidsCount++;
                             }
                             asteroidIt = asteroids.erase(asteroidIt);
@@ -288,15 +293,13 @@ CollisionSystem::Result CollisionSystem::update(
                         // Попадание!
                         asteroidHealth->value -= laserDmg->value;
                         if (asteroidHealth->value <= 0.f) {
-                            if (asteroidComp) {
+                            if (!isBossAsteroid && asteroidComp) {
                                 result.asteroidsToSplit.emplace_back(
                                     asteroidPos->value,
                                     asteroidVelocity->value,
                                     asteroidComp->size
                                 );
-                            }
-
-                            if (!isBossAsteroid) {
+                                result.destroyedAsteroidPositions.push_back(asteroidPos->value);
                                 result.destroyedAsteroidsCount++;
                             }
                             asteroidIt = asteroids.erase(asteroidIt);
@@ -330,6 +333,32 @@ CollisionSystem::Result CollisionSystem::update(
                         result.isBossHit = true;
                     }
                 }
+            }
+        }
+    }
+
+    if (playerPos && playerRender) {
+        sf::Vector2f playerSize = playerRender->shape.getSize();
+        sf::Vector2f playerCenter = playerPos->value;
+
+        for (auto it = powerUpPickups.begin(); it != powerUpPickups.end();) {
+            auto* pickupPos = (*it)->getComponent<Position>();
+            auto* pickupRender = (*it)->getComponent<Renderable>();
+            auto* pickupType = (*it)->getComponent<PowerUpPickup>();
+
+            if (!pickupPos || !pickupRender || !pickupType) {
+                ++it;
+                continue;
+            }
+
+            // Предполагаем, что дроп — квадрат со стороной 2 * R
+            sf::Vector2f pickupSize(POWER_UP_PICKUP_RADIUS * 2, POWER_UP_PICKUP_RADIUS * 2);
+            if (isIntersects(playerCenter, pickupPos->value, playerSize, pickupSize)) {
+                // Собираем усиление
+                result.collectedPowerUps.push_back(pickupType->type);
+                it = powerUpPickups.erase(it); // удаляем из списка
+            } else {
+                ++it;
             }
         }
     }

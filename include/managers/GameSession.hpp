@@ -14,6 +14,7 @@
 #include "config/WaveConfig.hpp"
 #include "data/OverlayState.hpp"
 #include "entities/Entity.hpp"
+#include "systems/PowerUpDropSystem.hpp"
 
 enum class PowerUpType;
 enum class OverlayState;
@@ -77,6 +78,8 @@ private:
     std::unique_ptr<Entity> boss;
     // ловушки
     std::vector<std::unique_ptr<Entity> > trapLasers;
+    // улучшения
+    std::vector<std::unique_ptr<Entity>> powerUpPickups;
 
     // системы
     WaveSystem waveSystem{TOTAL_WAVES, KILLS_TO_WAVE_UP};
@@ -96,6 +99,8 @@ private:
     PowerUpSystem powerUpSystem;
     bool awaitingPowerUp = false;
     std::vector<PowerUpType> currentPowerUpOptions;
+    // для случайных улучшений
+    std::mt19937 droppedPowerUpRng;
 
     // состяние
     OverlayState overlayState = OverlayState::NONE;

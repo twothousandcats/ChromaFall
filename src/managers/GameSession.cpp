@@ -22,7 +22,9 @@
 #include "systems/BossBehaviorSystem.hpp"
 #include "systems/BossSystem.hpp"
 #include "systems/InvincibilitySystem.hpp"
+#include "systems/PowerUpDropSystem.hpp"
 
+// TODO: МАССОВОЕ ВНЕДРЕНИЕ ТЕКУСТУР
 float GameSession::getPlayerHp() const {
     if (const auto *playerHp = player->getComponent<Health>()) {
         return playerHp->value;
@@ -130,6 +132,7 @@ void GameSession::updatePlayerAndWeapon(float dt) {
 void GameSession::updateEntities(float dt) {
     movementSystem.update(bullets, dt);
     movementSystem.update(asteroids, dt);
+    movementSystem.update(powerUpPickups, dt);
     if (boss) {
         movementSystem.update(*boss, dt);
     }
@@ -195,11 +198,27 @@ void GameSession::processCollisions(float dt) {
         bullets,
         asteroids,
         boss,
-        trapLasers
+        trapLasers,
+        powerUpPickups
     );
+    for (PowerUpType type : result.collectedPowerUps) {
+        powerUpSystem.apply(player.get(), type);
+    }
     // todo: резать длину лазера? но определение размеров происходит раньше
 
     experienceSystem.onAsteroidsDestroyed(result.destroyedAsteroidsCount);
+    // Дроп усилений
+    if (auto* upgrades = player->getComponent<Upgrades>()) {
+        for (const sf::Vector2f& pos : result.destroyedAsteroidPositions) {
+            PowerUpDropSystem::tryDropPowerUp(
+                powerUpPickups,
+                pos,
+                upgrades->weapon,
+                droppedPowerUpRng
+            );
+        }
+    }
+
     if (result.isBossHit) {
         auto *bossHealth = boss ? boss->getComponent<Health>() : nullptr;
         if (bossHealth && bossHealth->value <= 0.f) {
@@ -261,6 +280,8 @@ void GameSession::init() {
     bullets.clear();
     asteroids.clear();
     gameOver = false;
+
+    droppedPowerUpRng.seed(std::random_device{}());
 }
 
 void GameSession::update(
@@ -313,5 +334,7 @@ void GameSession::render(
     if (boss) {
         RenderSystem::render(window, {boss.get()});
     }
+
+    RenderSystem::render(window, powerUpPickups);
     RenderSystem::render(window, trapLasers);
 }
