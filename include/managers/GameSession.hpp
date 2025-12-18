@@ -9,6 +9,7 @@
 #include "../systems/PowerUpSystem.hpp"
 #include "../systems/ShootSystem.hpp"
 #include "../systems/WaveSystem.hpp"
+#include "components/Position.hpp"
 #include "config/SetupConfig.hpp"
 #include "config/WaveConfig.hpp"
 #include "data/OverlayState.hpp"
@@ -46,13 +47,26 @@ public:
     [[nodiscard]] OverlayState getOverlayState() const { return overlayState; }
 
     // UI
-    [[nodiscard]] const std::vector<PowerUpType>& getPowerUpOptions() const { return powerUpOptions; }
+    [[nodiscard]] const std::vector<PowerUpType> &getPowerUpOptions() const { return powerUpOptions; }
     [[nodiscard]] int getSelectedPowerUpIndex() const { return selectedPowerUpIndex; }
+
     void selectNextPowerUp();
+
     void selectPrevPowerUp();
+
     void confirmPowerUpSelection();
 
 private:
+    void updateBackground(float dt);
+    void updatePlayerAndWeapon(float dt);
+    void updateLaserWeapon(Position* playerPos, Upgrades* upgrades);
+    void updateBulletWeapon(Position* playerPos, Upgrades* upgrades);
+    void updateEntities(float dt);
+    void updateAsteroidSpawning();
+    void updateBossAndTraps(float dt);
+    void processCollisions(float dt);
+    void handleLevelUpAndPowerUps();
+
     // сущности
     std::unique_ptr<Entity> player;
     // снаряды
@@ -93,7 +107,7 @@ private:
 
     // background
     sf::Texture bgTexture;
-    std::optional<sf::Sprite> bgSprite; // спрайт не может существовать без текстуры
+    std::optional<sf::Sprite> bgSprite;
     float currentScrollOffset = 0.f;
-    const float totalBgHeight = WINDOW_HEIGHT * 2.0f;
+    float actualBgHeight = 0.f;
 };

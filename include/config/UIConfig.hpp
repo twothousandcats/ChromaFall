@@ -94,4 +94,5 @@ constexpr sf::Vector2f INFO_WAVE_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIG
 const std::string BASE_FONT_REGULAR = "assets/fonts/Orbitron-Regular.ttf";
 const std::string BASE_FONT_BOLD = "assets/fonts/Orbitron-Bold.ttf";
 const std::string BASE_BACKGROUND = "assets/images/bg_image.png";
+// const std::string BASE_BACKGROUND = "assets/images/bg_image2.jpg";
 const std::string BASE_HEART = "assets/images/heart.png";

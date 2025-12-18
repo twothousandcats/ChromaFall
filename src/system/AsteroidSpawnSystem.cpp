@@ -108,8 +108,7 @@ void AsteroidSpawnSystem::spawnChildAsteroids(
 
 void AsteroidSpawnSystem::update(
     std::vector<std::unique_ptr<Entity> > &asteroids,
-    const int currentWave,
-    float deltaTime
+    const int currentWave
 ) {
     spawnInterval = getSpawnIntervalForWave(currentWave);
     if (spawnClock.getElapsedTime().asSeconds() >= spawnInterval) {

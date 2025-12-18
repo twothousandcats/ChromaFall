@@ -304,6 +304,7 @@ void GameStateManager::switchToGameplay() {
 }
 
 // TODO: какой-то страшный chain code выходит(спросить)
+// state pattern
 void GameStateManager::handleEvents() {
     while (auto event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {

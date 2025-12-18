@@ -15,8 +15,7 @@ public:
 
     void update(
         std::vector<std::unique_ptr<Entity> > &asteroids,
-        int currentWave,
-        float deltaTime
+        int currentWave
     );
 
     void spawnChildAsteroids(
