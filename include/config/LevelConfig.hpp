@@ -3,7 +3,7 @@
 // MC
 constexpr int LEVEL_BASE = 1;
 constexpr int LEVEL_START_EXP = 0;
-constexpr float LEVEL_BASE_NEEDED_COUNT_EXP = 10.f; // 100
+constexpr float LEVEL_BASE_NEEDED_COUNT_EXP = 100.f; // 100
 constexpr int LEVEL_NEEDED_COUNT_EXP_ACC = 30.f; // +30%
 
 // asteroid

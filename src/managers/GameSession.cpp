@@ -251,6 +251,30 @@ void GameSession::processCollisions(float dt) {
     }
 }
 
+int GameSession::getPlayerLevel() const {
+    if (const auto* lvl = player->getComponent<Level>()) {
+        return lvl->value;
+    }
+
+    return LEVEL_BASE;
+}
+
+int GameSession::getPlayerCurrentExp() const {
+    if (const auto* exp = player->getComponent<Experience>()) {
+        return exp->value;
+    }
+
+    return LEVEL_START_EXP;
+}
+
+int GameSession::getPlayerExpForNextLevel() const {
+    if (const auto* exp = player->getComponent<Experience>()) {
+        return static_cast<int>(exp->neededValue);
+    }
+
+    return LEVEL_BASE_NEEDED_COUNT_EXP;
+}
+
 GameSession::GameSession(sf::RenderWindow &window) : window(window) {
     init();
 
@@ -267,7 +291,7 @@ GameSession::GameSession(sf::RenderWindow &window) : window(window) {
     }
 }
 
-void GameSession::init() {
+void GameSession::createPlayer() {
     player = std::make_unique<Entity>();
     player->addComponent(std::make_unique<Position>());
     player->addComponent(std::make_unique<Renderable>(PLAYER_SIDE, PLAYER_SIDE, PLAYER_COLOR));
@@ -276,6 +300,10 @@ void GameSession::init() {
     player->addComponent(std::make_unique<Experience>(LEVEL_START_EXP));
     player->addComponent(std::make_unique<Level>(LEVEL_BASE));
     player->addComponent(std::make_unique<Upgrades>());
+}
+
+void GameSession::init() {
+    createPlayer();
 
     bullets.clear();
     asteroids.clear();

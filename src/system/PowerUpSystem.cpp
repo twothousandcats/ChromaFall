@@ -4,27 +4,13 @@
 #include "entities/Entity.hpp"
 #include "components/Upgrades.hpp"
 #include "components/Health.hpp"
+#include "utils/PowerUpUtils.hpp"
 
 std::vector<PowerUpType> PowerUpSystem::generateOptions(
     int count,
     WeaponType currentWeapon
 ) {
-    std::vector allOptions = {
-        PowerUpType::EXTRA_HP,
-        PowerUpType::EXTRA_DAMAGE,
-        PowerUpType::EXTRA_BULLET,
-        PowerUpType::SHOOTING_COOLDOWN,
-    };
-
-    if (currentWeapon != WeaponType::SHOTGUN) {
-        allOptions.push_back(PowerUpType::WEAPON_SHOTGUN);
-    }
-    if (currentWeapon != WeaponType::LASER) {
-        allOptions.push_back(PowerUpType::WEAPON_LASER);
-    }
-    if (currentWeapon != WeaponType::BLASTER) { // если используешь
-        allOptions.push_back(PowerUpType::WEAPON_BLASTER);
-    }
+    auto allOptions = getAvailablePowerUps(currentWeapon);
 
     std::random_device rd;
     std::mt19937 g(rd());

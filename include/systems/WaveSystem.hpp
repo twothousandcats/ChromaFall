@@ -39,6 +39,16 @@ public:
     [[nodiscard]] bool isAsteroidPhase() const { return phase == WavePhase::ASTEROIDS; }
     [[nodiscard]] bool isBossPhase() const { return phase == WavePhase::BOSS; }
 
+    [[nodiscard]] int getCurrentWaveKills() const { return killedAsteroidsInCurrentWave; }
+
+    [[nodiscard]] int getCurrentWaveRequiredKills() const {
+        if (currentWave <= 0) {
+            return 0;
+        }
+
+        return getRequiredKillsForCurrentWave();
+    }
+
 private:
     WavePhase phase = WavePhase::ASTEROIDS;
     int currentWave = 1;

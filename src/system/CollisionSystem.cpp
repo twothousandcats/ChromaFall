@@ -351,12 +351,10 @@ CollisionSystem::Result CollisionSystem::update(
                 continue;
             }
 
-            // Предполагаем, что дроп — квадрат со стороной 2 * R
             sf::Vector2f pickupSize(POWER_UP_PICKUP_RADIUS * 2, POWER_UP_PICKUP_RADIUS * 2);
             if (isIntersects(playerCenter, pickupPos->value, playerSize, pickupSize)) {
-                // Собираем усиление
                 result.collectedPowerUps.push_back(pickupType->type);
-                it = powerUpPickups.erase(it); // удаляем из списка
+                it = powerUpPickups.erase(it);
             } else {
                 ++it;
             }

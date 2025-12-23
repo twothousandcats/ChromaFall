@@ -89,10 +89,13 @@ constexpr int INFO_HP_BORDER_WIDTH = 2;
 
 // wave
 constexpr sf::Vector2f INFO_WAVE_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING};
+constexpr sf::Vector2f INFO_WAVE_KILLS_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING * 3.f};
+constexpr sf::Vector2f INFO_LEVEL_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING * 5.f};
+constexpr sf::Vector2f INFO_EXP_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING * 7.f};
 
 // BASE
 const std::string BASE_FONT_REGULAR = "assets/fonts/Orbitron-Regular.ttf";
 const std::string BASE_FONT_BOLD = "assets/fonts/Orbitron-Bold.ttf";
 const std::string BASE_BACKGROUND = "assets/images/bg_image.png";
 // const std::string BASE_BACKGROUND = "assets/images/bg_image2.jpg";
-const std::string BASE_HEART = "assets/images/heart.png";
+const std::string BASE_HEART = "assets/images/textures/heart.png";

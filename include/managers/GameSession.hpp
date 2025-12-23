@@ -30,11 +30,13 @@ public:
     void init();
 
     void setOverlayState(OverlayState state);
+    void createPlayer();
 
     [[nodiscard]] float getPlayerHp() const;
 
     [[nodiscard]] bool isGameOver() const { return gameOver; }
 
+    // прокидываем UI данные волны
     [[nodiscard]] int getCurrentWave() const { return waveSystem.getCurrentWave(); }
 
     [[nodiscard]] int getTotalWaves() const {
@@ -43,6 +45,14 @@ public:
 
     [[nodiscard]] bool isVictory() const {
         return waveSystem.isVictory();
+    }
+
+    [[nodiscard]] int getCurrentWaveKilledCount() const {
+        return waveSystem.getCurrentWaveKills();
+    }
+
+    [[nodiscard]] int getCurrentWaveTotalCount() const {
+        return waveSystem.getCurrentWaveRequiredKills();
     }
 
     [[nodiscard]] OverlayState getOverlayState() const { return overlayState; }
@@ -56,6 +66,11 @@ public:
     void selectPrevPowerUp();
 
     void confirmPowerUpSelection();
+
+    // гетеры для UI exp
+    int getPlayerLevel() const;
+    int getPlayerCurrentExp() const;
+    int getPlayerExpForNextLevel() const;
 
 private:
     void updateBackground(float dt);

@@ -410,7 +410,8 @@ void GameStateManager::render() {
         // wave UI
         const sf::Text waveText = createText(
             "Wave: " + std::to_string(gameSession->getCurrentWave()) + " / " + std::to_string(
-                gameSession->getTotalWaves()),
+                gameSession->getTotalWaves()
+            ),
             INFO_WAVE_POS,
             font,
             INFO_FZ,
@@ -420,7 +421,46 @@ void GameStateManager::render() {
         );
         window.draw(waveText);
 
-        // hp
+        // kills UI
+        const sf::Text killsText = createText(
+            "Kills: " + std::to_string(gameSession->getCurrentWaveKilledCount()) + " / " + std::to_string(
+                gameSession->getCurrentWaveTotalCount()
+            ),
+            INFO_WAVE_KILLS_POS,
+            font,
+            INFO_FZ,
+            INFO_TEXT_COLOR,
+            sf::Text::Regular,
+            TextOrigin::BOTTOM_RIGHT
+        );
+        window.draw(killsText);
+
+        // lvl ui
+        const sf::Text levelText = createText(
+            "Lvl: " + std::to_string(gameSession->getPlayerLevel()),
+            INFO_LEVEL_POS,
+            font,
+            INFO_FZ,
+            INFO_TEXT_COLOR,
+            sf::Text::Regular,
+            TextOrigin::BOTTOM_RIGHT
+        );
+        window.draw(levelText);
+
+        // exp ui
+        const sf::Text expText = createText(
+            "XP: " + std::to_string(gameSession->getPlayerCurrentExp()) +
+            " / " + std::to_string(gameSession->getPlayerExpForNextLevel()),
+            INFO_EXP_POS,
+            font,
+            INFO_FZ,
+            INFO_TEXT_COLOR,
+            sf::Text::Regular,
+            TextOrigin::BOTTOM_RIGHT
+        );
+        window.draw(expText);
+
+        // hp ui
         if (hpSprite.has_value()) {
             const auto spriteSize = static_cast<float>(hpSprite->getTextureRect().size.y);
             hpSprite->setPosition({INFO_HP_POS_X, INFO_HP_POS_Y});
