@@ -4,7 +4,7 @@
 #include "components/Health.hpp"
 #include "components/Position.hpp"
 #include "components/Velocity.hpp"
-#include "components/Renderable.hpp"
+#include "components/Shape.hpp"
 #include "components/BossPatternData.hpp"
 
 #include "config/BossConfig.hpp" // где будут HP и размеры
@@ -39,7 +39,7 @@ std::unique_ptr<Entity> BossSystem::spawnBoss(BossType type) {
     boss->addComponent(std::make_unique<Health>(static_cast<float>(maxHp)));
     boss->addComponent(std::make_unique<Position>(WINDOW_CENTER_X, 0.f - BOSS_SIZE));
     boss->addComponent(std::make_unique<Velocity>());
-    boss->addComponent(std::make_unique<Renderable>(size, size, color));
+    boss->addComponent(std::make_unique<Shape>(size, size, color));
     boss->addComponent(std::make_unique<BossPatternData>());
 
     return boss;

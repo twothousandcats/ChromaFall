@@ -2,10 +2,10 @@
 #include "../core/Component.hpp"
 #include <SFML/Graphics.hpp>
 
-struct Renderable final : Component {
+struct Shape final : Component {
     sf::RectangleShape shape;
 
-    explicit Renderable(
+    explicit Shape(
         float w = 20.f,
         float h = 20.f,
         const sf::Color color = sf::Color::Cyan

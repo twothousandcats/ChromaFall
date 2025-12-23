@@ -3,7 +3,7 @@
 #include "components/Bullet.hpp"
 #include "components/Damage.hpp"
 #include "components/Position.hpp"
-#include "components/Renderable.hpp"
+#include "components/Shape.hpp"
 #include "components/Velocity.hpp"
 
 #include "entities/Entity.hpp"
@@ -55,7 +55,7 @@ void ShootSystem::update(
         bullet->addComponent(std::make_unique<Velocity>(velocity.x, velocity.y));
 
         // Рендер
-        auto renderable = std::make_unique<Renderable>();
+        auto renderable = std::make_unique<Shape>();
         renderable->shape.setSize(BULLET_SIZE);
         renderable->shape.setFillColor(BULLET_COLOR);
         bullet->addComponent(std::move(renderable));

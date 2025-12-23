@@ -8,7 +8,7 @@
 #include "components/Damage.hpp"
 #include "components/Health.hpp"
 #include "components/Position.hpp"
-#include "components/Renderable.hpp"
+#include "components/Shape.hpp"
 #include "components/Velocity.hpp"
 #include "components/Invincibility.hpp"
 #include "components/LaserBeam.hpp"
@@ -78,7 +78,7 @@ CollisionSystem::Result CollisionSystem::update(
     // bullet -> asteroid
     for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
         auto *bulletPos = (*bulletIt)->getComponent<Position>();
-        auto *bulletRender = (*bulletIt)->getComponent<Renderable>();
+        auto *bulletRender = (*bulletIt)->getComponent<Shape>();
         auto *bulletDmg = (*bulletIt)->getComponent<Damage>();
         bool bulletHit = false;
 
@@ -87,7 +87,7 @@ CollisionSystem::Result CollisionSystem::update(
 
             for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end();) {
                 auto *asteroidPos = (*asteroidIt)->getComponent<Position>();
-                auto *asteroidRender = (*asteroidIt)->getComponent<Renderable>();
+                auto *asteroidRender = (*asteroidIt)->getComponent<Shape>();
                 auto *asteroidHealth = (*asteroidIt)->getComponent<Health>();
                 auto *asteroidVelocity = (*asteroidIt)->getComponent<Velocity>();
                 auto *isBossAsteroid = (*asteroidIt)->getComponent<BossSpawnedAsteroid>();
@@ -139,7 +139,7 @@ CollisionSystem::Result CollisionSystem::update(
 
     // asteroid -> player
     auto *playerPos = player.getComponent<Position>();
-    auto *playerRender = player.getComponent<Renderable>();
+    auto *playerRender = player.getComponent<Shape>();
     auto *playerHealth = player.getComponent<Health>();
     auto *playerInvisibility = player.getComponent<Invincibility>();
 
@@ -148,7 +148,7 @@ CollisionSystem::Result CollisionSystem::update(
 
         for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end(); ++asteroidIt) {
             auto *asteroidPos = (*asteroidIt)->getComponent<Position>();
-            auto *asteroidRender = (*asteroidIt)->getComponent<Renderable>();
+            auto *asteroidRender = (*asteroidIt)->getComponent<Shape>();
             if (asteroidPos && asteroidRender) {
                 sf::Vector2f asteroidSize = asteroidRender->shape.getSize();
                 if (isIntersects(
@@ -180,7 +180,7 @@ CollisionSystem::Result CollisionSystem::update(
     // bullets -> boss
     if (boss) {
         auto *bossPos = boss->getComponent<Position>();
-        auto *bossRender = boss->getComponent<Renderable>();
+        auto *bossRender = boss->getComponent<Shape>();
         auto *bossHealth = boss->getComponent<Health>();
 
         if (bossPos && bossRender && bossHealth) {
@@ -188,7 +188,7 @@ CollisionSystem::Result CollisionSystem::update(
 
             for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
                 auto *bulletPos = (*bulletIt)->getComponent<Position>();
-                auto *bulletRender = (*bulletIt)->getComponent<Renderable>();
+                auto *bulletRender = (*bulletIt)->getComponent<Shape>();
                 auto *bulletDmg = (*bulletIt)->getComponent<Damage>();
 
                 if (bulletPos && bulletRender) {
@@ -208,7 +208,7 @@ CollisionSystem::Result CollisionSystem::update(
     // trapLasers -> player
     if (!result.isPlayerDied) {
         auto *playerPos = player.getComponent<Position>();
-        auto *playerRender = player.getComponent<Renderable>();
+        auto *playerRender = player.getComponent<Shape>();
         auto *playerHealth = player.getComponent<Health>();
         auto *playerInv = player.getComponent<Invincibility>();
 
@@ -222,7 +222,7 @@ CollisionSystem::Result CollisionSystem::update(
             for (const auto &laser: trapLasers) {
                 auto *laserComp = laser->getComponent<TrapLaser>();
                 auto *laserPos = laser->getComponent<Position>();
-                auto *laserRender = laser->getComponent<Renderable>();
+                auto *laserRender = laser->getComponent<Shape>();
 
                 if (!laserComp || !laserPos || !laserRender || !laserComp->isActive) {
                     continue; // фаза подготовки
@@ -261,7 +261,7 @@ CollisionSystem::Result CollisionSystem::update(
     // playerLaser -> asteroids, boss
     if (playerLaser) {
         auto *laserPos = playerLaser->getComponent<Position>();
-        auto *laserRender = playerLaser->getComponent<Renderable>();
+        auto *laserRender = playerLaser->getComponent<Shape>();
         auto *laserDmg = playerLaser->getComponent<Damage>();
 
         if (laserPos && laserRender && laserDmg) {
@@ -275,7 +275,7 @@ CollisionSystem::Result CollisionSystem::update(
             // ateroids
             for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end();) {
                 auto *asteroidPos = (*asteroidIt)->getComponent<Position>();
-                auto *asteroidRender = (*asteroidIt)->getComponent<Renderable>();
+                auto *asteroidRender = (*asteroidIt)->getComponent<Shape>();
                 auto *asteroidHealth = (*asteroidIt)->getComponent<Health>();
                 auto *asteroidVelocity = (*asteroidIt)->getComponent<Velocity>();
                 auto *asteroidComp = (*asteroidIt)->getComponent<Asteroid>();
@@ -317,7 +317,7 @@ CollisionSystem::Result CollisionSystem::update(
             // boss
             if (boss) {
                 auto *bossPos = boss->getComponent<Position>();
-                auto *bossRender = boss->getComponent<Renderable>();
+                auto *bossRender = boss->getComponent<Shape>();
                 auto *bossHealth = boss->getComponent<Health>();
 
                 if (bossPos && bossRender && bossHealth) {
@@ -343,7 +343,7 @@ CollisionSystem::Result CollisionSystem::update(
 
         for (auto it = powerUpPickups.begin(); it != powerUpPickups.end();) {
             auto* pickupPos = (*it)->getComponent<Position>();
-            auto* pickupRender = (*it)->getComponent<Renderable>();
+            auto* pickupRender = (*it)->getComponent<Shape>();
             auto* pickupType = (*it)->getComponent<PowerUpPickup>();
 
             if (!pickupPos || !pickupRender || !pickupType) {

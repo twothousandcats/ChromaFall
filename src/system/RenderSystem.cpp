@@ -1,7 +1,7 @@
 #include "../include/systems/RenderSystem.hpp"
 #include "../include/entities/Entity.hpp"
 #include "../include/components/Position.hpp"
-#include "../include/components/Renderable.hpp"
+#include "../include/components/Shape.hpp"
 
 void RenderSystem::render(
     sf::RenderWindow &window,
@@ -12,7 +12,7 @@ void RenderSystem::render(
             continue;
         }
         const auto *pos = entity->getComponent<Position>();
-        auto *render = entity->getComponent<Renderable>();
+        auto *render = entity->getComponent<Shape>();
         if (pos && render) {
             render->shape.setPosition(pos->value);
             window.draw(render->shape);
@@ -30,7 +30,7 @@ void RenderSystem::render(
         }
 
         const auto *pos = entity->getComponent<Position>();
-        auto *render = entity->getComponent<Renderable>();
+        auto *render = entity->getComponent<Shape>();
         if (pos && render) {
             render->shape.setPosition(pos->value);
             window.draw(render->shape);

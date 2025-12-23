@@ -12,7 +12,7 @@
 #include "components/Invincibility.hpp"
 #include "components/Level.hpp"
 #include "components/Position.hpp"
-#include "components/Renderable.hpp"
+#include "components/Shape.hpp"
 #include "components/TrapLaser.hpp"
 #include "components/Upgrades.hpp"
 #include "config/LevelConfig.hpp"
@@ -165,7 +165,7 @@ void GameSession::updateBossAndTraps(float dt) {
                     it = trapLasers.erase(it);
                     continue;
                 }
-                auto *render = (*it)->getComponent<Renderable>();
+                auto *render = (*it)->getComponent<Shape>();
                 if (render) {
                     render->shape.setFillColor(
                         laser->isActive ? TRAP_LASER_BASE_COLOR : TRAP_LASER_WARNING_COLOR
@@ -294,7 +294,7 @@ GameSession::GameSession(sf::RenderWindow &window) : window(window) {
 void GameSession::createPlayer() {
     player = std::make_unique<Entity>();
     player->addComponent(std::make_unique<Position>());
-    player->addComponent(std::make_unique<Renderable>(PLAYER_SIDE, PLAYER_SIDE, PLAYER_COLOR));
+    player->addComponent(std::make_unique<Shape>(PLAYER_SIDE, PLAYER_SIDE, PLAYER_COLOR));
     player->addComponent(std::make_unique<Health>(PLAYER_BASE_HP));
     player->addComponent(std::make_unique<Invincibility>());
     player->addComponent(std::make_unique<Experience>(LEVEL_START_EXP));

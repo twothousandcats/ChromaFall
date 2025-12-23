@@ -1,6 +1,6 @@
 #include "systems/AsteroidSpawnSystem.hpp"
 
-#include "components/Renderable.hpp"
+#include "components/Shape.hpp"
 #include "components/Position.hpp"
 #include "components/Velocity.hpp"
 #include "components/Acceleration.hpp"
@@ -53,7 +53,7 @@ std::unique_ptr<Entity> AsteroidSpawnSystem::createAsteroid(
     asteroid->addComponent(std::make_unique<Acceleration>(0.f, ASTEROID_LINEAR_ACCELERATION));
     asteroid->addComponent(std::make_unique<Asteroid>(size));
     asteroid->addComponent(std::make_unique<Health>(currentTemplate->health));
-    asteroid->addComponent(std::make_unique<Renderable>(
+    asteroid->addComponent(std::make_unique<Shape>(
         currentTemplate->radius, currentTemplate->radius, currentTemplate->color
     ));
     return asteroid;

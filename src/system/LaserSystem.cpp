@@ -3,7 +3,7 @@
 #include "components/Damage.hpp"
 #include "components/LaserBeam.hpp"
 #include "components/Position.hpp"
-#include "components/Renderable.hpp"
+#include "components/Shape.hpp"
 #include "config/LaserBeamConfig.hpp"
 #include "entities/Entity.hpp"
 
@@ -28,7 +28,7 @@ void LaserSystem::update(
         laserEntity->addComponent(std::make_unique<Damage>(damage));
         laserEntity->addComponent(std::make_unique<LaserBeam>());
 
-        auto renderable = std::make_unique<Renderable>();
+        auto renderable = std::make_unique<Shape>();
         renderable->shape.setFillColor(LASER_COLOR);
         renderable->shape.setOrigin(LASER_ORIGIN);
         laserEntity->addComponent(std::move(renderable));
@@ -37,7 +37,7 @@ void LaserSystem::update(
     // Обновляем
     auto* pos = laserEntity->getComponent<Position>();
     auto* damageComp = laserEntity->getComponent<Damage>();
-    auto* render = laserEntity->getComponent<Renderable>();
+    auto* render = laserEntity->getComponent<Shape>();
 
     if (pos && damageComp && render) {
         damageComp->value = damage;

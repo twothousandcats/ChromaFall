@@ -4,7 +4,7 @@
 
 #include "components/Position.hpp"
 #include "components/PowerUpPickup.hpp"
-#include "components/Renderable.hpp"
+#include "components/Shape.hpp"
 #include "components/Velocity.hpp"
 #include "data/PowerUpType.hpp"
 #include "utils/PowerUpUtils.hpp"
@@ -33,7 +33,7 @@ void PowerUpDropSystem::tryDropPowerUp(
     pickup->addComponent(std::make_unique<PowerUpPickup>(chosen));
 
     // TODO: перевод на текстуры
-    auto renderable = std::make_unique<Renderable>(
+    auto renderable = std::make_unique<Shape>(
         POWER_UP_PICKUP_RADIUS * 2,
         POWER_UP_PICKUP_RADIUS * 2,
         sf::Color::White

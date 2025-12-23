@@ -6,7 +6,7 @@
 #include "components/Health.hpp"
 #include "components/BossPatternData.hpp"
 #include "components/Asteroid.hpp"
-#include "components/Renderable.hpp"
+#include "components/Shape.hpp"
 #include "components/TrapLaser.hpp"
 
 #include "config/BossConfig.hpp"
@@ -54,7 +54,7 @@ void BossBehaviorSystem::spawnUpwardAsteroids(
         asteroid->addComponent(std::make_unique<Acceleration>(0.f, BOSS_ASTEROIDS_TO_BLOW_ACCELERATION));
         asteroid->addComponent(std::make_unique<Asteroid>(AsteroidSize::SMALL));
         asteroid->addComponent(std::make_unique<Health>(1.f));
-        asteroid->addComponent(std::make_unique<Renderable>(
+        asteroid->addComponent(std::make_unique<Shape>(
             MEDIUM_ASTEROID_RADIUS,
             MEDIUM_ASTEROID_RADIUS,
             color
@@ -88,7 +88,7 @@ void BossBehaviorSystem::spawnTrapLasers(
         laser->addComponent(std::make_unique<Position>(position.x, position.y));
 
         // Renderable компонент
-        auto renderable = std::make_unique<Renderable>(
+        auto renderable = std::make_unique<Shape>(
             TRAP_LASER_BASE_WIDTH,
             TRAP_LASER_BASE_HEIGHT,
             TRAP_LASER_WARNING_COLOR
