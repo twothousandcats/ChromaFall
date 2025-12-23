@@ -19,7 +19,7 @@ void RenderSystem::render(
         // текстуру, если компонент есть
         const auto *textured = entity->getComponent<Textured>();
         if (textured && textured->value) {
-            render->shape.setTexture(textured->value);
+            render->shape.setTexture(textured->value, false);
         } else {
             render->shape.setTexture(nullptr); // отключаем текстуру
         }
@@ -42,7 +42,7 @@ void RenderSystem::render(
 
         const auto *textured = entity->getComponent<Textured>();
         if (textured && textured->value) {
-            render->shape.setTexture(textured->value);
+            render->shape.setTexture(textured->value, false);
         } else {
             render->shape.setTexture(nullptr);
         }

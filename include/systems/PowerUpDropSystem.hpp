@@ -6,10 +6,19 @@
 
 class PowerUpDropSystem {
 public:
-    static void tryDropPowerUp(
-        std::vector<std::unique_ptr<Entity>>& pickups,
-        const sf::Vector2f& spawnPos,
-        WeaponType currentWeapon,
-        std::mt19937& rng
+    PowerUpDropSystem();
+
+    void textureFallback(
+        Entity *pickup
     );
+
+    void tryDropPowerUp(
+        std::vector<std::unique_ptr<Entity> > &pickups,
+        const sf::Vector2f &spawnPos,
+        WeaponType currentWeapon,
+        std::mt19937 &rng
+    );
+
+private:
+    sf::Texture powerUpTexture;
 };

@@ -225,7 +225,7 @@ void GameSession::processCollisions(float dt) {
     // Дроп усилений
     if (auto *upgrades = player->getComponent<Upgrades>()) {
         for (const sf::Vector2f &pos: result.destroyedAsteroidPositions) {
-            PowerUpDropSystem::tryDropPowerUp(
+            powerUpDropSystem.tryDropPowerUp(
                 powerUpPickups,
                 pos,
                 upgrades->weapon,

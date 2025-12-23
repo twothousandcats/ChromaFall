@@ -64,8 +64,8 @@ void BossBehaviorSystem::spawnUpwardAsteroids(
         asteroid->addComponent(std::make_unique<Asteroid>(AsteroidSize::SMALL));
         asteroid->addComponent(std::make_unique<Health>(1.f));
         asteroid->addComponent(std::make_unique<Shape>(
-            MEDIUM_ASTEROID_RADIUS,
-            MEDIUM_ASTEROID_RADIUS,
+            SMALL_ASTEROID_RADIUS,
+            SMALL_ASTEROID_RADIUS,
             color
         ));
         if (texture) {

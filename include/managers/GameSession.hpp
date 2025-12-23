@@ -110,6 +110,7 @@ private:
     ExperienceSystem experienceSystem;
     LaserSystem laserSystem;
     TextureAnimationSystem animationSystem;
+    PowerUpDropSystem powerUpDropSystem;
 
     // общее
     sf::RenderWindow &window;
