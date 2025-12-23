@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include "components/BossPatternData.hpp"
@@ -13,7 +14,9 @@
 
 class BossBehaviorSystem {
 public:
-    static void update(
+    BossBehaviorSystem();
+
+    void update(
         std::unique_ptr<Entity> &boss,
         const sf::Vector2f &playerPos,
         std::vector<std::unique_ptr<Entity> > &asteroids, // для MEDIUM/HARD
@@ -22,7 +25,9 @@ public:
     );
 
 private:
-    static void spawnUpwardAsteroids(
+    sf::Texture trapAsteroidTexture;
+
+    void spawnUpwardAsteroids(
         std::vector<std::unique_ptr<Entity> > &asteroids,
         const sf::Vector2f &origin,
         int count = 25,

@@ -170,7 +170,7 @@ void GameSession::updateBossAndTraps(float dt) {
         if (!boss) {
             boss = bossSystem.spawnBoss(static_cast<BossType>(waveSystem.getCurrentWave() - 1));
         }
-        BossBehaviorSystem::update(boss, playerPosition->value, asteroids, trapLasers, dt);
+        bossBehaviorSystem.update(boss, playerPosition->value, asteroids, trapLasers, dt);
 
         for (auto it = trapLasers.begin(); it != trapLasers.end();) {
             auto *laser = (*it)->getComponent<TrapLaser>();

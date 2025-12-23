@@ -18,9 +18,11 @@
 #include <cmath>
 #include <iostream>
 #include <random>
+#include <utility>
 
 #include "components/Acceleration.hpp"
 #include "components/BossSpawnedAsteroid.hpp"
+#include "components/Textured.hpp"
 #include "config/PlayerConfig.hpp"
 #include "config/SetupConfig.hpp"
 #include "config/TrapLaserConfig.hpp"
@@ -29,6 +31,12 @@ static std::mt19937 rng{std::random_device{}()};
 
 static float length(const sf::Vector2f &v) {
     return std::sqrt(v.x * v.x + v.y * v.y);
+}
+
+BossBehaviorSystem::BossBehaviorSystem() {
+    if (!trapAsteroidTexture.loadFromFile(BOSS_ASTEROIDS_TO_BLOW_TEXTURE_PATH)) {
+        exit(1);
+    }
 }
 
 // спавн как есть, было бы правильнее привязть к системе спавна
@@ -43,6 +51,7 @@ void BossBehaviorSystem::spawnUpwardAsteroids(
         float offsetAngle = (i - 2) * BOSS_ASTEROIDS_TO_BLOW_OFFSET_FACTOR; // -0.5 .. +0.5 рад
         float angle = -M_PI_2 + offsetAngle;
         float speed = baseSpeed;
+        const sf::Texture *texture = &trapAsteroidTexture;
 
         auto asteroid = std::make_unique<Entity>();
         asteroid->addComponent(std::make_unique<BossSpawnedAsteroid>()); // маркер астероид босса
@@ -59,6 +68,9 @@ void BossBehaviorSystem::spawnUpwardAsteroids(
             MEDIUM_ASTEROID_RADIUS,
             color
         ));
+        if (texture) {
+            asteroid->addComponent(std::make_unique<Textured>(*texture));
+        }
         asteroids.push_back(std::move(asteroid));
     }
 }
@@ -248,7 +260,7 @@ void BossBehaviorSystem::update(
                 *pos,
                 *vel,
                 dt
-                );
+            );
 
             if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {
                 pattern->lastAttackTime = pattern->timeSinceSpawn;

@@ -14,6 +14,7 @@
 #include "config/WaveConfig.hpp"
 #include "data/OverlayState.hpp"
 #include "entities/Entity.hpp"
+#include "systems/BossBehaviorSystem.hpp"
 #include "systems/BossSystem.hpp"
 #include "systems/PowerUpDropSystem.hpp"
 #include "systems/TextureAnimationSystem.hpp"
@@ -102,6 +103,7 @@ private:
     // системы
     WaveSystem waveSystem{TOTAL_WAVES, KILLS_TO_WAVE_UP};
     BossSystem bossSystem;
+    BossBehaviorSystem bossBehaviorSystem;
     MovementSystem movementSystem;
     ShootSystem shootSystem;
     AsteroidSpawnSystem asteroidSpawnSystem;

@@ -1,6 +1,8 @@
 #pragma  once
 #include <SFML/Graphics/Color.hpp>
 
+#include "AsteroidConfig.hpp"
+
 constexpr sf::Color BOSS_COLOR_DEFAULT = {131, 208, 65, 255};
 constexpr sf::Color BOSS_COLOR_TYPE_MEDIUM = {255, 202, 54, 255};
 constexpr sf::Color BOSS_COLOR_TYPE_HARD = {236, 105, 181, 255};
@@ -30,6 +32,7 @@ constexpr sf::Color BOSS_ASTEROIDS_TO_BLOW_COLOR = {255, 0, 0, 255};
 constexpr float BOSS_ASTEROIDS_TO_BLOW_SPEED = 120.f;
 constexpr float BOSS_ASTEROIDS_TO_BLOW_OFFSET_FACTOR = 0.25f;
 constexpr float BOSS_ASTEROIDS_TO_BLOW_ACCELERATION = 50.f;
+constexpr auto BOSS_ASTEROIDS_TO_BLOW_TEXTURE_PATH = ASTEROID_TEXTURE_PATH_MEDIUM;
 
 // entry phase
 constexpr float BOSS_ENTRY_Y_POS = 150.f;
