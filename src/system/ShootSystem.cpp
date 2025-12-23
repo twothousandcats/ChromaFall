@@ -1,5 +1,7 @@
 #include "systems/ShootSystem.hpp"
 
+#include <iostream>
+
 #include "components/Bullet.hpp"
 #include "components/Damage.hpp"
 #include "components/Position.hpp"
@@ -14,8 +16,7 @@
 
 void ShootSystem::update(
     std::vector<std::unique_ptr<Entity> > &bullets,
-    const sf::RenderWindow &window,
-    const sf::Vector2f &playerPosition,
+    const sf::Vector2f &muzzlePos,
     int bulletsCount,
     float shootingCooldown,
     float damage,
@@ -28,9 +29,6 @@ void ShootSystem::update(
     if (shootClock.getElapsedTime().asSeconds() < shootingCooldown) {
         return;
     }
-
-    float muzzleX = playerPosition.x + PLAYER_SIDE / HALF_DIVISOR - BULLET_WIDTH / HALF_DIVISOR;
-    float muzzleY = playerPosition.y;
 
     for (int i = 0; i < bulletsCount; ++i) {
         auto bullet = std::make_unique<Entity>();
@@ -46,7 +44,10 @@ void ShootSystem::update(
             angleRad += currentAngle;
         }
 
-        bullet->addComponent(std::make_unique<Position>(muzzleX, muzzleY - BULLET_HEIGHT));
+        float muzzleX = muzzlePos.x + BULLET_WIDTH * HALF_DIVISOR;
+        float muzzleY = muzzlePos.y - PLAYER_SIDE / HALF_DIVISOR;
+
+        bullet->addComponent(std::make_unique<Position>(muzzleX, muzzleY));
 
         sf::Vector2f velocity(
             std::cos(angleRad) * BULLET_SPEED,

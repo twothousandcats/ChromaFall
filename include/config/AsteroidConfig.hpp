@@ -21,3 +21,7 @@ constexpr float INTERVAL_REDUCTION_FACTOR = 0.2f;
 
 // DROP ANGLE
 constexpr float ASTEROID_ANGLE_SPREAD_FACTOR = 0.5f;
+
+constexpr auto ASTEROID_TEXTURE_PATH_SMALL = "assets/images/textures/asteroid_s.png";
+constexpr auto ASTEROID_TEXTURE_PATH_MEDIUM = "assets/images/textures/asteroid_m.png";
+constexpr auto ASTEROID_TEXTURE_PATH_LARGE = "assets/images/textures/asteroid_l.png";

@@ -14,7 +14,9 @@
 #include "config/WaveConfig.hpp"
 #include "data/OverlayState.hpp"
 #include "entities/Entity.hpp"
+#include "systems/BossSystem.hpp"
 #include "systems/PowerUpDropSystem.hpp"
+#include "systems/TextureAnimationSystem.hpp"
 
 enum class PowerUpType;
 enum class OverlayState;
@@ -85,6 +87,7 @@ private:
 
     // сущности
     std::unique_ptr<Entity> player;
+    sf::Texture playerTexture; // рендер MC
     // снаряды
     std::unique_ptr<Entity> playerLaser; // ← переместить из временной переменной сюда
     std::vector<std::unique_ptr<Entity> > bullets;
@@ -98,11 +101,13 @@ private:
 
     // системы
     WaveSystem waveSystem{TOTAL_WAVES, KILLS_TO_WAVE_UP};
+    BossSystem bossSystem;
     MovementSystem movementSystem;
     ShootSystem shootSystem;
     AsteroidSpawnSystem asteroidSpawnSystem;
     ExperienceSystem experienceSystem;
     LaserSystem laserSystem;
+    TextureAnimationSystem animationSystem;
 
     // общее
     sf::RenderWindow &window;

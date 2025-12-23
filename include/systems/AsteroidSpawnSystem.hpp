@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <random>
+#include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -26,6 +27,10 @@ public:
     );
 
 private:
+    sf::Texture smallAsteroidTexture;
+    sf::Texture mediumAsteroidTexture;
+    sf::Texture largeAsteroidTexture;
+
     sf::Clock spawnClock;
     float spawnInterval = 1.f;
 

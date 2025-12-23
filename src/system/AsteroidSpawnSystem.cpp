@@ -1,10 +1,13 @@
 #include "systems/AsteroidSpawnSystem.hpp"
 
+#include <iostream>
+
 #include "components/Shape.hpp"
 #include "components/Position.hpp"
 #include "components/Velocity.hpp"
 #include "components/Acceleration.hpp"
 #include "components/Health.hpp"
+#include "components/Textured.hpp"
 #include "config/AsteroidConfig.hpp"
 #include "config/GameConfig.hpp"
 #include "config/SetupConfig.hpp"
@@ -15,6 +18,16 @@ AsteroidSpawnSystem::AsteroidSpawnSystem()
     : randomEngine(std::random_device{}()),
       asteroidTypeDist(0, 2),
       asteroidIntervalDist(MIN_GEN_INTERVAL, MAX_GEN_INTERVAL) {
+    // TODO: стоит ли вообще дропать?
+    if (!smallAsteroidTexture.loadFromFile(ASTEROID_TEXTURE_PATH_SMALL)) {
+        exit(1);
+    }
+    if (!mediumAsteroidTexture.loadFromFile(ASTEROID_TEXTURE_PATH_MEDIUM)) {
+        exit(1);
+    }
+    if (!largeAsteroidTexture.loadFromFile(ASTEROID_TEXTURE_PATH_LARGE)) {
+        exit(1);
+    }
 }
 
 float AsteroidSpawnSystem::getSpawnIntervalForWave(const int currentWave) {
@@ -34,7 +47,6 @@ std::unique_ptr<Entity> AsteroidSpawnSystem::createAsteroid(
 ) {
     auto &templates = getAsteroidTemplates();
     const AsteroidTemplate *currentTemplate = nullptr;
-    // вынести в метод
     for (const auto &t: templates) {
         if (t.size == size) {
             currentTemplate = &t;
@@ -46,16 +58,39 @@ std::unique_ptr<Entity> AsteroidSpawnSystem::createAsteroid(
         return nullptr;
     }
 
+    const sf::Texture *texture = nullptr;
+    switch (size) {
+        case AsteroidSize::LARGE: texture = &largeAsteroidTexture;
+            break;
+        case AsteroidSize::MEDIUM: texture = &mediumAsteroidTexture;
+            break;
+        case AsteroidSize::SMALL: texture = &smallAsteroidTexture;
+            break;
+    }
+
+    // Если !текстура - цвет
+    // sf::Color shapeColor = texture ? sf::Color::White : currentTemplate->color;
+
+    if (texture) {
+        std::cout << "yes" << std::endl;
+    } else {
+        std::cout << "no" << std::endl;
+    }
+
     auto asteroid = std::make_unique<Entity>();
-    // вынести в метод
     asteroid->addComponent(std::make_unique<Position>(x, y));
     asteroid->addComponent(std::make_unique<Velocity>(xVel, 0.f));
     asteroid->addComponent(std::make_unique<Acceleration>(0.f, ASTEROID_LINEAR_ACCELERATION));
     asteroid->addComponent(std::make_unique<Asteroid>(size));
     asteroid->addComponent(std::make_unique<Health>(currentTemplate->health));
     asteroid->addComponent(std::make_unique<Shape>(
-        currentTemplate->radius, currentTemplate->radius, currentTemplate->color
+        currentTemplate->radius,
+        currentTemplate->radius,
+        currentTemplate->color
     ));
+    if (texture) {
+        asteroid->addComponent(std::make_unique<Textured>(*texture));
+    }
     return asteroid;
 }
 

@@ -9,11 +9,9 @@ class Entity;
 
 class ShootSystem {
 public:
-
     void update(
         std::vector<std::unique_ptr<Entity> > &bullets,
-        const sf::RenderWindow &window,
-        const sf::Vector2f &playerPosition,
+        const sf::Vector2f &muzzlePos,
         int bulletsCount = DEFAULT_BULLETS_COUNT,
         float shootingCooldown = SHOOTING_COOLDOWN,
         float damage = BULLET_BASE_DMG,

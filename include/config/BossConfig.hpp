@@ -1,9 +1,9 @@
 #pragma  once
 #include <SFML/Graphics/Color.hpp>
 
-constexpr sf::Color BOSS_COLOR_DEFAULT = {136, 123, 232, 255};
-constexpr sf::Color BOSS_COLOR_TYPE_MEDIUM = {136, 0, 232, 255};
-constexpr sf::Color BOSS_COLOR_TYPE_HARD = {242, 192, 220, 255};
+constexpr sf::Color BOSS_COLOR_DEFAULT = {131, 208, 65, 255};
+constexpr sf::Color BOSS_COLOR_TYPE_MEDIUM = {255, 202, 54, 255};
+constexpr sf::Color BOSS_COLOR_TYPE_HARD = {236, 105, 181, 255};
 
 constexpr float DOUBLE_FACTOR = 2.f;
 constexpr float BOSS_ATTACK_INTERVAL = 3.f;
@@ -44,3 +44,11 @@ constexpr float BOSS_STIFFNESS_FACTOR = 8.0f; // коэффициент уско
 constexpr float BOSS_DAMPING = 4.0f; // коэффициент затухания скорости
 constexpr float BOSS_ARRIVAL_DIST = 15.0f; // Радиус покоя вокруг цели
 constexpr float BOSS_ARRIVAL_SPEED = 25.0f; //Максимальная скорость, при которой цель всё ещё считается достигнутой
+
+constexpr auto BOSS_EASY_TEXTURE_PATH = "assets/images/textures/boss_easy.png";
+constexpr auto BOSS_MEDIUM_TEXTURE_PATH = "assets/images/textures/boss_medium.png";
+constexpr auto BOSS_HARD_TEXTURE_PATH = "assets/images/textures/boss_hard.png";
+constexpr int BOSS_TEXTURE_FRAMES_COUNT = 5;
+constexpr int BOSS_TEXTURE_FRAMES_COUNT_MEDIUM = 4;
+constexpr int BOSS_TEXTURE_FRAME_SIDE = 16;
+constexpr float BOSS_TEXTURE_FRAME_DURATION = 0.3f;

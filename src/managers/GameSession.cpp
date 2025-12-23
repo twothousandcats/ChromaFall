@@ -13,6 +13,7 @@
 #include "components/Level.hpp"
 #include "components/Position.hpp"
 #include "components/Shape.hpp"
+#include "components/Textured.hpp"
 #include "components/TrapLaser.hpp"
 #include "components/Upgrades.hpp"
 #include "config/LevelConfig.hpp"
@@ -81,7 +82,10 @@ void GameSession::updateLaserWeapon(Position *playerPos, Upgrades *upgrades) {
     );
 }
 
-void GameSession::updateBulletWeapon(Position *playerPos, Upgrades *upgrades) {
+void GameSession::updateBulletWeapon(
+    Position *playerPos,
+    Upgrades *upgrades
+) {
     int bulletCount = DEFAULT_BULLETS_COUNT + upgrades->extraBulletCount;
     float bulletDamage = BULLET_BASE_DMG * upgrades->damageMultiplier;
     float spreadAngle = DEFAULT_BULLETS_SPREAD_FACTOR;
@@ -92,10 +96,17 @@ void GameSession::updateBulletWeapon(Position *playerPos, Upgrades *upgrades) {
         spreadAngle = SHOTGUN_BULLETS_SPREAD_FACTOR;
     }
 
+    auto *playerShape = player->getComponent<Shape>();
+    if (!playerShape) return;
+
+    sf::Vector2f muzzlePos = {
+        playerPos->value.x,
+        playerPos->value.y
+    };
+
     shootSystem.update(
         bullets,
-        window,
-        playerPos->value,
+        muzzlePos,
         bulletCount,
         shootingCooldown,
         bulletDamage,
@@ -131,10 +142,14 @@ void GameSession::updatePlayerAndWeapon(float dt) {
 
 void GameSession::updateEntities(float dt) {
     movementSystem.update(bullets, dt);
+    animationSystem.update(bullets, dt);
     movementSystem.update(asteroids, dt);
+    animationSystem.update(asteroids, dt);
     movementSystem.update(powerUpPickups, dt);
+    animationSystem.update(powerUpPickups, dt);
     if (boss) {
         movementSystem.update(*boss, dt);
+        animationSystem.update(*boss, dt);
     }
 }
 
@@ -153,7 +168,7 @@ void GameSession::updateBossAndTraps(float dt) {
 
     if (waveSystem.isBossPhase()) {
         if (!boss) {
-            boss = BossSystem::spawnBoss(static_cast<BossType>(waveSystem.getCurrentWave() - 1));
+            boss = bossSystem.spawnBoss(static_cast<BossType>(waveSystem.getCurrentWave() - 1));
         }
         BossBehaviorSystem::update(boss, playerPosition->value, asteroids, trapLasers, dt);
 
@@ -201,15 +216,15 @@ void GameSession::processCollisions(float dt) {
         trapLasers,
         powerUpPickups
     );
-    for (PowerUpType type : result.collectedPowerUps) {
+    for (PowerUpType type: result.collectedPowerUps) {
         powerUpSystem.apply(player.get(), type);
     }
     // todo: резать длину лазера? но определение размеров происходит раньше
 
     experienceSystem.onAsteroidsDestroyed(result.destroyedAsteroidsCount);
     // Дроп усилений
-    if (auto* upgrades = player->getComponent<Upgrades>()) {
-        for (const sf::Vector2f& pos : result.destroyedAsteroidPositions) {
+    if (auto *upgrades = player->getComponent<Upgrades>()) {
+        for (const sf::Vector2f &pos: result.destroyedAsteroidPositions) {
             PowerUpDropSystem::tryDropPowerUp(
                 powerUpPickups,
                 pos,
@@ -252,7 +267,7 @@ void GameSession::processCollisions(float dt) {
 }
 
 int GameSession::getPlayerLevel() const {
-    if (const auto* lvl = player->getComponent<Level>()) {
+    if (const auto *lvl = player->getComponent<Level>()) {
         return lvl->value;
     }
 
@@ -260,7 +275,7 @@ int GameSession::getPlayerLevel() const {
 }
 
 int GameSession::getPlayerCurrentExp() const {
-    if (const auto* exp = player->getComponent<Experience>()) {
+    if (const auto *exp = player->getComponent<Experience>()) {
         return exp->value;
     }
 
@@ -268,11 +283,27 @@ int GameSession::getPlayerCurrentExp() const {
 }
 
 int GameSession::getPlayerExpForNextLevel() const {
-    if (const auto* exp = player->getComponent<Experience>()) {
+    if (const auto *exp = player->getComponent<Experience>()) {
         return static_cast<int>(exp->neededValue);
     }
 
     return LEVEL_BASE_NEEDED_COUNT_EXP;
+}
+
+void GameSession::createPlayer() {
+    if (!playerTexture.loadFromFile(PLAYER_TEXTURE)) {
+        exit(1);
+    }
+
+    player = std::make_unique<Entity>();
+    player->addComponent(std::make_unique<Position>());
+    player->addComponent(std::make_unique<Textured>(playerTexture));
+    player->addComponent(std::make_unique<Shape>(PLAYER_SIDE, PLAYER_SIDE, PLAYER_COLOR));
+    player->addComponent(std::make_unique<Health>(PLAYER_BASE_HP));
+    player->addComponent(std::make_unique<Invincibility>());
+    player->addComponent(std::make_unique<Experience>(LEVEL_START_EXP));
+    player->addComponent(std::make_unique<Level>(LEVEL_BASE));
+    player->addComponent(std::make_unique<Upgrades>());
 }
 
 GameSession::GameSession(sf::RenderWindow &window) : window(window) {
@@ -289,17 +320,6 @@ GameSession::GameSession(sf::RenderWindow &window) : window(window) {
     } else {
         exit(1);
     }
-}
-
-void GameSession::createPlayer() {
-    player = std::make_unique<Entity>();
-    player->addComponent(std::make_unique<Position>());
-    player->addComponent(std::make_unique<Shape>(PLAYER_SIDE, PLAYER_SIDE, PLAYER_COLOR));
-    player->addComponent(std::make_unique<Health>(PLAYER_BASE_HP));
-    player->addComponent(std::make_unique<Invincibility>());
-    player->addComponent(std::make_unique<Experience>(LEVEL_START_EXP));
-    player->addComponent(std::make_unique<Level>(LEVEL_BASE));
-    player->addComponent(std::make_unique<Upgrades>());
 }
 
 void GameSession::init() {

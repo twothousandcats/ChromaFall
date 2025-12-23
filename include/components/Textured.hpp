@@ -8,8 +8,4 @@ struct Textured final : Component {
 
     explicit Textured(const sf::Texture &tex) : value(&tex) {
     }
-
-    // запрет копирования
-    Textured(const Textured &) = delete;
-    Textured &operator=(const Textured &) = delete;
 };
