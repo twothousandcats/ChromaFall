@@ -389,6 +389,7 @@ void GameStateManager::handleEvents() {
                     } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
                         if (selectedPauseOption == PauseOption::RESUME) {
                             gameSession->setOverlayState(OverlayState::NONE);
+                            AudioManager::getInstance().resumeMusic();
                         } else {
                             switchToMainMenu();
                         }
