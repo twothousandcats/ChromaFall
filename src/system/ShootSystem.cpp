@@ -7,12 +7,14 @@
 #include "components/Position.hpp"
 #include "components/Shape.hpp"
 #include "components/Velocity.hpp"
+#include "config/AudioConfig.hpp"
 
 #include "entities/Entity.hpp"
 
 #include "config/BulletConfig.hpp"
 #include "config/PlayerConfig.hpp"
 #include "config/SetupConfig.hpp"
+#include "managers/AudioManager.hpp"
 
 void ShootSystem::update(
     std::vector<std::unique_ptr<Entity> > &bullets,
@@ -20,7 +22,8 @@ void ShootSystem::update(
     int bulletsCount,
     float shootingCooldown,
     float damage,
-    float spreadAngle
+    float spreadAngle,
+    WeaponType weaponType
 ) {
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
         return;
@@ -28,6 +31,12 @@ void ShootSystem::update(
 
     if (shootClock.getElapsedTime().asSeconds() < shootingCooldown) {
         return;
+    }
+
+    if (weaponType == WeaponType::BLASTER) {
+        AudioManager::getInstance().playSound(AUDIO_SFX_BLASTER_SHOOT_NAME);
+    } else {
+        AudioManager::getInstance().playSound(AUDIO_SFX_SHOTGUN_SHOOT_NAME);
     }
 
     for (int i = 0; i < bulletsCount; ++i) {

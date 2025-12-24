@@ -2,6 +2,7 @@
 #include <vector>
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include "components/Upgrades.hpp"
 #include "config/BulletConfig.hpp"
 
 enum class WeaponType;
@@ -15,7 +16,8 @@ public:
         int bulletsCount = DEFAULT_BULLETS_COUNT,
         float shootingCooldown = SHOOTING_COOLDOWN,
         float damage = BULLET_BASE_DMG,
-        float spreadAngle = DEFAULT_BULLETS_SPREAD_FACTOR // shotgun
+        float spreadAngle = DEFAULT_BULLETS_SPREAD_FACTOR, // shotgun
+        WeaponType weaponType = WeaponType::BLASTER
     );
 
 private:

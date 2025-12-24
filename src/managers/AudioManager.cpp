@@ -1,44 +1,91 @@
-#include <iostream>
 #include "managers/AudioManager.hpp"
 
-void AudioManager::loadSound(const std::string& name, const std::string& filepath) {
-    if (soundBuffers.find(name) == soundBuffers.end()) {
-        if (!soundBuffers[name].loadFromFile(filepath)) {
-            std::cerr << "Failed to load sound: " << filepath << std::endl;
-        }
-    }
+#include <iostream>
+
+AudioManager &AudioManager::getInstance() {
+    static AudioManager manager;
+    return manager;
 }
 
-void AudioManager::playSound(const std::string& name) {
-    if (soundBuffers.find(name) == soundBuffers.end()) {
-        currentSound.setBuffer(soundBuffers[name]);
-        currentSound.setVolume(soundVolume);
-        currentSound.play();
+void AudioManager::loadSound(
+    const std::string &name,
+    const std::string &filepath
+) {
+    // загружен?
+    if (soundBuffers.find(name) != soundBuffers.end()) {
+        return;
     }
+
+    auto buffer = std::make_unique<sf::SoundBuffer>();
+    if (!buffer->loadFromFile(filepath)) {
+        std::cerr << "Failed to load sound buffer: " << filepath << std::endl;
+        return;
+    }
+
+    soundBuffers.emplace(name, std::move(buffer));
 }
 
-void AudioManager::playMusic(const std::string& filepath) {
-    if (music.openFromFile(filepath)) {
-        music.setLoopPoints({
-            sf::milliseconds(500),
-            sf::seconds(4)
-        }); // TODO: отладка
-        music.setVolume(musicVolume);
-        music.play();
-    } else {
-        std::cerr << "Failed to load music: " << filepath << std::endl;
+void AudioManager::playSound(
+    const std::string &name
+) {
+    auto it = soundBuffers.find(name);
+    if (it == soundBuffers.end()) {
+        std::cerr << "Sound not loaded: " << name << std::endl;
+        return;
     }
+
+    cleanupFinishedSounds();
+
+    auto sound = std::make_unique<sf::Sound>(*it->second);
+    sound->setVolume(currentSoundVolume);
+    sound->play();
+    activeSounds.push_back(std::move(sound));
+}
+
+void AudioManager::playMusic(
+    const std::string &filepath
+) {
+    if (!currentMusic->openFromFile(filepath)) {
+        std::cerr << "Failed to open music: " << filepath << std::endl;
+        return;
+    }
+
+    currentMusic->setLooping(true);
+    currentMusic->setVolume(currentMusicVolume);
+    currentMusic->play();
 }
 
 void AudioManager::stopMusic() {
-    music.stop();
+    currentMusic->stop();
 }
 
-void AudioManager::setMusicVolume(float volume) {
-    musicVolume = volume;
-    music.setVolume(musicVolume);
+void AudioManager::pauseMusic() {
+    currentMusic->pause();
 }
 
-void AudioManager::setSoundVolume(float volume) {
-    soundVolume = volume;
+void AudioManager::resumeMusic() {
+    currentMusic->play();
+}
+
+void AudioManager::setMusicVolume(
+    float volume
+) {
+    currentMusicVolume = std::clamp(volume, AUDIO_MUSIC_VOLUME_MIN, AUDIO_MUSIC_VOLUME_MAX);
+    currentMusic->setVolume(currentMusicVolume);
+}
+
+void AudioManager::setSoundVolume(
+    float volume
+) {
+    currentSoundVolume = std::clamp(volume, AUDIO_SFX_VOLUME_MIN, AUDIO_SFX_VOLUME_MAX);
+}
+
+void AudioManager::cleanupFinishedSounds() {
+    activeSounds.erase(
+        std::remove_if(activeSounds.begin(), activeSounds.end(),
+                       [](const auto& sound) {
+                           return sound->getStatus() == sf::Sound::Status::Stopped;
+                       }),
+        activeSounds.end()
+    );
 }

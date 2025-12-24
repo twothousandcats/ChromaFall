@@ -89,4 +89,10 @@ private:
     // hp
     sf::Texture hpTexture;
     std::optional<sf::Sprite> hpSprite;
+
+    // music
+    bool isThemeMusicPlaying = false;
+    bool isGameMusicPlaying = false;
+
+    // sounds
 };

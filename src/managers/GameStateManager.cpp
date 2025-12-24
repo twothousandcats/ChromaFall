@@ -12,10 +12,11 @@
 #include "config/UIConfig.hpp"
 #include "data/AsteroidTemplate.hpp"
 #include "data/TextOrigin.hpp"
+#include "managers/AudioManager.hpp"
 #include "managers/GameSession.hpp"
 
 GameStateManager::GameStateManager(sf::RenderWindow &window)
-    : window(window) {
+    : window(window), currentState(GameState::MainMenu) {
     // определяем шрифт, иначе exit
     if (!font.openFromFile(BASE_FONT_BOLD)) {
         if (!font.openFromFile(BASE_FONT_REGULAR)) {
@@ -62,6 +63,22 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
     } else {
         exit(1);
     }
+
+    // явно (музыка)
+    switchToMainMenu();
+
+    // загрузка звуков
+    auto &audio = AudioManager::getInstance();
+
+    // Shooting
+    audio.loadSound(AUDIO_SFX_BLASTER_SHOOT_NAME, AUDIO_SFX_BLASTER_SHOOT_PATH);
+    audio.loadSound(AUDIO_SFX_SHOTGUN_SHOOT_NAME, AUDIO_SFX_SHOTGUN_SHOOT_PATH);
+    audio.loadSound(AUDIO_SFX_LASER_SHOOT_NAME, AUDIO_SFX_LASER_SHOOT_PATH);
+
+    // ui
+    audio.loadSound(AUDIO_SFX_SELECT_BUTTON_NAME, AUDIO_SFX_SELECT_BUTTON_PATH);
+    audio.loadSound(AUDIO_SFX_SELECT_UPGRADE_NAME, AUDIO_SFX_SELECT_UPGRADE_PATH);
+    audio.loadSound(AUDIO_SFX_LVLUP_NAME, AUDIO_SFX_LVLUP_PATH);
 }
 
 GameStateManager::~GameStateManager() = default;
@@ -296,11 +313,31 @@ void GameStateManager::renderPauseOverlay(
 void GameStateManager::switchToMainMenu() {
     currentState = GameState::MainMenu;
     gameSession.reset(); // отчистка
+
+    if (isGameMusicPlaying) {
+        AudioManager::getInstance().stopMusic();
+        isGameMusicPlaying = false;
+    }
+
+    if (!isThemeMusicPlaying) {
+        AudioManager::getInstance().playMusic(AUDIO_MUSIC_THEME);
+        isThemeMusicPlaying = true;
+    }
 }
 
 void GameStateManager::switchToGameplay() {
     currentState = GameState::Gameplay;
     gameSession = std::make_unique<GameSession>(window);
+
+    if (isThemeMusicPlaying) {
+        AudioManager::getInstance().stopMusic();
+        isThemeMusicPlaying = false;
+    }
+
+    if (!isGameMusicPlaying) {
+        AudioManager::getInstance().playMusic(AUDIO_MUSIC_SESSION);
+        isGameMusicPlaying = true;
+    }
 }
 
 // TODO: какой-то страшный chain code выходит(спросить)
@@ -317,9 +354,11 @@ void GameStateManager::handleEvents() {
                 if (key == sf::Keyboard::Key::Escape) {
                     if (overlay == OverlayState::PAUSE) {
                         gameSession->setOverlayState(OverlayState::NONE);
+                        AudioManager::getInstance().resumeMusic();
                     } else {
                         gameSession->setOverlayState(OverlayState::PAUSE);
                         selectedPauseOption = PauseOption::RESUME; // сброс выбора
+                        AudioManager::getInstance().pauseMusic();
                     }
                     continue;
                 }
@@ -330,8 +369,10 @@ void GameStateManager::handleEvents() {
                     const auto &key = event->getIf<sf::Event::KeyPressed>()->code;
                     if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A) {
                         gameSession->selectPrevPowerUp();
+                        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_UPGRADE_NAME);
                     } else if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D) {
                         gameSession->selectNextPowerUp();
+                        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_UPGRADE_NAME);
                     } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
                         gameSession->confirmPowerUpSelection();
                     }
@@ -341,8 +382,10 @@ void GameStateManager::handleEvents() {
                     const auto &key = event->getIf<sf::Event::KeyPressed>()->code;
                     if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W) {
                         selectedPauseOption = PauseOption::RESUME;
+                        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
                     } else if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S) {
                         selectedPauseOption = PauseOption::MAIN_MENU;
+                        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
                     } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
                         if (selectedPauseOption == PauseOption::RESUME) {
                             gameSession->setOverlayState(OverlayState::NONE);

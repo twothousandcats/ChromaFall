@@ -20,6 +20,7 @@
 
 #include "config/PlayerConfig.hpp"
 #include "config/UIConfig.hpp"
+#include "managers/AudioManager.hpp"
 #include "systems/BossBehaviorSystem.hpp"
 #include "systems/BossSystem.hpp"
 #include "systems/InvincibilitySystem.hpp"
@@ -110,7 +111,8 @@ void GameSession::updateBulletWeapon(
         bulletCount,
         shootingCooldown,
         bulletDamage,
-        spreadAngle
+        spreadAngle,
+        upgrades->weapon
     );
 }
 
@@ -197,6 +199,7 @@ void GameSession::updateBossAndTraps(float dt) {
 
 void GameSession::handleLevelUpAndPowerUps() {
     if (experienceSystem.processLevelUps(player.get())) {
+        AudioManager::getInstance().playSound(AUDIO_SFX_LVLUP_NAME);
         overlayState = OverlayState::POWER_UP_SELECTION;
         if (auto *upgrades = player->getComponent<Upgrades>()) {
             powerUpOptions = powerUpSystem.generateOptions(3, upgrades->weapon);

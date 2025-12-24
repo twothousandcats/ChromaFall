@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <unordered_map>
 #include <SFML/Audio.hpp>
@@ -7,32 +8,42 @@
 
 class AudioManager {
 public:
-    // Загрузка и воспроизведение по имени один раз
+    // Singleton access
+    static AudioManager &getInstance();
+
+    // SFX
     void loadSound(const std::string &name, const std::string &filepath);
 
     void playSound(const std::string &name);
 
-    // Музыка загрузка и управление
+    // Music
     void playMusic(const std::string &filepath);
 
     void stopMusic();
 
-    void setMusicVolume(float volume);
+    void pauseMusic();
 
-    void setSoundVolume(float volume);
+    void resumeMusic();
 
-    // Запрет копирования
+    void setMusicVolume(float volume); // 0-100
+    void setSoundVolume(float volume); // 0-100
+
+    // запрет копирования TODO: разобраться
     AudioManager(const AudioManager &) = delete;
 
     AudioManager &operator=(const AudioManager &) = delete;
 
 private:
+    AudioManager() = default;
+
     ~AudioManager() = default;
 
-    // TODO: возможно надо будет использовать пул звуков
-    std::unordered_map<std::string, sf::SoundBuffer> soundBuffers;
-    sf::Sound currentSound;
-    sf::Music music;
-    float soundVolume = SFX_VOLUME;
-    float musicVolume = MUSIC_VOLUME;
+    std::unordered_map<std::string, std::unique_ptr<sf::SoundBuffer> > soundBuffers;
+    std::vector<std::unique_ptr<sf::Sound> > activeSounds; // одновременные SFX
+    std::unique_ptr<sf::Music> currentMusic = std::make_unique<sf::Music>();
+
+    float currentSoundVolume = AUDIO_SFX_VOLUME_MAX;
+    float currentMusicVolume = AUDIO_MUSIC_VOLUME_MAX;
+
+    void cleanupFinishedSounds();
 };

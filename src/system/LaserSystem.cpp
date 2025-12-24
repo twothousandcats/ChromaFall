@@ -4,8 +4,10 @@
 #include "components/LaserBeam.hpp"
 #include "components/Position.hpp"
 #include "components/Shape.hpp"
+#include "config/AudioConfig.hpp"
 #include "config/LaserBeamConfig.hpp"
 #include "entities/Entity.hpp"
+#include "managers/AudioManager.hpp"
 
 void LaserSystem::update(
     std::unique_ptr<Entity> &laserEntity,
@@ -22,6 +24,8 @@ void LaserSystem::update(
         return;
     }
 
+    AudioManager::getInstance().playSound(AUDIO_SFX_LASER_SHOOT_NAME);
+
     if (!laserEntity) {
         laserEntity = std::make_unique<Entity>();
         laserEntity->addComponent(std::make_unique<Position>());
@@ -35,9 +39,9 @@ void LaserSystem::update(
     }
 
     // Обновляем
-    auto* pos = laserEntity->getComponent<Position>();
-    auto* damageComp = laserEntity->getComponent<Damage>();
-    auto* render = laserEntity->getComponent<Shape>();
+    auto *pos = laserEntity->getComponent<Position>();
+    auto *damageComp = laserEntity->getComponent<Damage>();
+    auto *render = laserEntity->getComponent<Shape>();
 
     if (pos && damageComp && render) {
         damageComp->value = damage;
