@@ -22,15 +22,15 @@ public:
         int expEarned = 0;
     };
 
-    static Result update(
+    Result update(
         Entity &player,
         Entity *playerLaser,
         std::vector<std::unique_ptr<Entity> > &bullets,
         std::vector<std::unique_ptr<Entity> > &asteroids,
         std::unique_ptr<Entity> &boss,
         const std::vector<std::unique_ptr<Entity> > &trapLasers,
-    std::vector<std::unique_ptr<Entity>>& powerUpPickups
-    );
+        std::vector<std::unique_ptr<Entity> > &powerUpPickups
+    ) const;
 
 private:
     static bool isIntersects(
@@ -44,5 +44,42 @@ private:
         const sf::Vector2f &point,
         const sf::Vector2f &segA,
         const sf::Vector2f &segB
+    );
+
+    static void processBulletAsteroidCollisions(
+        std::vector<std::unique_ptr<Entity> > &bullets,
+        std::vector<std::unique_ptr<Entity> > &asteroids,
+        Result &result
+    );
+
+    static void processAsteroidPlayerCollisions(
+        Entity &player,
+        const std::vector<std::unique_ptr<Entity> > &asteroids,
+        Result &result
+    );
+
+    static void processBulletBossCollisions(
+        std::vector<std::unique_ptr<Entity> > &bullets,
+        const std::unique_ptr<Entity> &boss,
+        Result &result
+    );
+
+    static void processTrapLaserPlayerCollisions(
+        Entity &player,
+        const std::vector<std::unique_ptr<Entity> > &trapLasers,
+        Result &result
+    );
+
+    static void processPlayerLaserCollisions(
+        Entity &playerLaser,
+        std::vector<std::unique_ptr<Entity> > &asteroids,
+        const std::unique_ptr<Entity> &boss,
+        Result &result
+    );
+
+    static void processPowerUpPickups(
+        Entity &player,
+        std::vector<std::unique_ptr<Entity> > &powerUpPickups,
+        Result &result
     );
 };

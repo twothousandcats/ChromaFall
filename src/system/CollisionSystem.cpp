@@ -20,7 +20,6 @@
 
 #include "entities/Entity.hpp"
 
-// TODO: РЕФАКТО
 struct PowerUpPickup;
 
 bool CollisionSystem::isIntersects(
@@ -71,11 +70,30 @@ CollisionSystem::Result CollisionSystem::update(
     std::vector<std::unique_ptr<Entity> > &asteroids,
     std::unique_ptr<Entity> &boss,
     const std::vector<std::unique_ptr<Entity> > &trapLasers,
-    std::vector<std::unique_ptr<Entity>>& powerUpPickups
-) {
+    std::vector<std::unique_ptr<Entity> > &powerUpPickups
+) const {
     Result result;
 
-    // bullet -> asteroid
+    // уничтожения, взаимодействия
+    processBulletAsteroidCollisions(bullets, asteroids, result);
+    processAsteroidPlayerCollisions(player, asteroids, result);
+    processBulletBossCollisions(bullets, boss, result);
+    if (!result.isPlayerDied) {
+        processTrapLaserPlayerCollisions(player, trapLasers, result);
+    }
+    if (playerLaser) {
+        processPlayerLaserCollisions(*playerLaser, asteroids, boss, result);
+    }
+    processPowerUpPickups(player, powerUpPickups, result);
+
+    return result;
+}
+
+void CollisionSystem::processBulletAsteroidCollisions(
+    std::vector<std::unique_ptr<Entity> > &bullets,
+    std::vector<std::unique_ptr<Entity> > &asteroids,
+    Result &result
+) {
     for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
         auto *bulletPos = (*bulletIt)->getComponent<Position>();
         auto *bulletRender = (*bulletIt)->getComponent<Shape>();
@@ -136,8 +154,13 @@ CollisionSystem::Result CollisionSystem::update(
             ++bulletIt;
         }
     }
+};
 
-    // asteroid -> player
+void CollisionSystem::processAsteroidPlayerCollisions(
+    Entity &player,
+    const std::vector<std::unique_ptr<Entity> > &asteroids,
+    Result &result
+) {
     auto *playerPos = player.getComponent<Position>();
     auto *playerRender = player.getComponent<Shape>();
     auto *playerHealth = player.getComponent<Health>();
@@ -146,9 +169,9 @@ CollisionSystem::Result CollisionSystem::update(
     if (playerPos && playerRender && playerHealth) {
         const sf::Vector2f playerSize = playerRender->shape.getSize();
 
-        for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end(); ++asteroidIt) {
-            auto *asteroidPos = (*asteroidIt)->getComponent<Position>();
-            auto *asteroidRender = (*asteroidIt)->getComponent<Shape>();
+        for (const auto &asteroid: asteroids) {
+            auto *asteroidPos = asteroid->getComponent<Position>();
+            auto *asteroidRender = asteroid->getComponent<Shape>();
             if (asteroidPos && asteroidRender) {
                 sf::Vector2f asteroidSize = asteroidRender->shape.getSize();
                 if (isIntersects(
@@ -176,8 +199,13 @@ CollisionSystem::Result CollisionSystem::update(
             }
         }
     }
+};
 
-    // bullets -> boss
+void CollisionSystem::processBulletBossCollisions(
+    std::vector<std::unique_ptr<Entity> > &bullets,
+    const std::unique_ptr<Entity> &boss,
+    Result &result
+) {
     if (boss) {
         auto *bossPos = boss->getComponent<Position>();
         auto *bossRender = boss->getComponent<Shape>();
@@ -204,8 +232,13 @@ CollisionSystem::Result CollisionSystem::update(
             }
         }
     }
+};
 
-    // trapLasers -> player
+void CollisionSystem::processTrapLaserPlayerCollisions(
+    Entity &player,
+    const std::vector<std::unique_ptr<Entity> > &trapLasers,
+    Result &result
+) {
     if (!result.isPlayerDied) {
         auto *playerPos = player.getComponent<Position>();
         auto *playerRender = player.getComponent<Shape>();
@@ -257,94 +290,106 @@ CollisionSystem::Result CollisionSystem::update(
             }
         }
     }
+};
 
-    // playerLaser -> asteroids, boss
-    if (playerLaser) {
-        auto *laserPos = playerLaser->getComponent<Position>();
-        auto *laserRender = playerLaser->getComponent<Shape>();
-        auto *laserDmg = playerLaser->getComponent<Damage>();
+void CollisionSystem::processPlayerLaserCollisions(
+    Entity &playerLaser,
+    std::vector<std::unique_ptr<Entity> > &asteroids,
+    const std::unique_ptr<Entity> &boss,
+    Result &result
+) {
+    auto *laserPos = playerLaser.getComponent<Position>();
+    auto *laserRender = playerLaser.getComponent<Shape>();
+    auto *laserDmg = playerLaser.getComponent<Damage>();
 
-        if (laserPos && laserRender && laserDmg) {
-            sf::Transform transform = laserRender->shape.getTransform();
-            sf::Vector2f localStart(0, 0);
-            sf::Vector2f localEnd(0, laserRender->shape.getSize().y);
-            sf::Vector2f laserStart = transform.transformPoint(localStart);
-            sf::Vector2f laserEnd = transform.transformPoint(localEnd);
-            float laserHalfWidth = laserRender->shape.getSize().x / 2.f;
+    if (laserPos && laserRender && laserDmg) {
+        sf::Transform transform = laserRender->shape.getTransform();
+        sf::Vector2f localStart(0, 0);
+        sf::Vector2f localEnd(0, laserRender->shape.getSize().y);
+        sf::Vector2f laserStart = transform.transformPoint(localStart);
+        sf::Vector2f laserEnd = transform.transformPoint(localEnd);
+        float laserHalfWidth = laserRender->shape.getSize().x / 2.f;
 
-            // ateroids
-            for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end();) {
-                auto *asteroidPos = (*asteroidIt)->getComponent<Position>();
-                auto *asteroidRender = (*asteroidIt)->getComponent<Shape>();
-                auto *asteroidHealth = (*asteroidIt)->getComponent<Health>();
-                auto *asteroidVelocity = (*asteroidIt)->getComponent<Velocity>();
-                auto *asteroidComp = (*asteroidIt)->getComponent<Asteroid>();
-                auto *isBossAsteroid = (*asteroidIt)->getComponent<BossSpawnedAsteroid>();
+        for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end();) {
+            auto *asteroidPos = (*asteroidIt)->getComponent<Position>();
+            auto *asteroidRender = (*asteroidIt)->getComponent<Shape>();
+            auto *asteroidHealth = (*asteroidIt)->getComponent<Health>();
+            auto *asteroidVelocity = (*asteroidIt)->getComponent<Velocity>();
+            auto *asteroidComp = (*asteroidIt)->getComponent<Asteroid>();
+            auto *isBossAsteroid = (*asteroidIt)->getComponent<BossSpawnedAsteroid>();
 
-                if (asteroidPos && asteroidRender && asteroidHealth && asteroidVelocity) {
-                    sf::Vector2f asteroidCenter = asteroidPos->value;
-                    float asteroidRadius = std::max(
-                                               asteroidRender->shape.getSize().x,
-                                               asteroidRender->shape.getSize().y
-                                           ) / 2.f;
+            if (asteroidPos && asteroidRender && asteroidHealth && asteroidVelocity) {
+                sf::Vector2f asteroidCenter = asteroidPos->value;
+                float asteroidRadius = std::max(
+                                           asteroidRender->shape.getSize().x,
+                                           asteroidRender->shape.getSize().y
+                                       ) / 2.f;
 
-                    float distance = distanceFromPointToSegment(asteroidCenter, laserStart, laserEnd);
-                    if (distance <= asteroidRadius + laserHalfWidth) {
-                        // Попадание!
-                        asteroidHealth->value -= laserDmg->value;
-                        if (asteroidHealth->value <= 0.f) {
-                            if (!isBossAsteroid && asteroidComp) {
-                                result.asteroidsToSplit.emplace_back(
-                                    asteroidPos->value,
-                                    asteroidVelocity->value,
-                                    asteroidComp->size
-                                );
-                                result.destroyedAsteroidPositions.push_back(asteroidPos->value);
-                                result.destroyedAsteroidsCount++;
-                            }
-                            asteroidIt = asteroids.erase(asteroidIt);
-                        } else {
-                            ++asteroidIt;
+                float distance = distanceFromPointToSegment(asteroidCenter, laserStart, laserEnd);
+                if (distance <= asteroidRadius + laserHalfWidth) {
+                    // Попадание!
+                    asteroidHealth->value -= laserDmg->value;
+                    if (asteroidHealth->value <= 0.f) {
+                        if (!isBossAsteroid && asteroidComp) {
+                            result.asteroidsToSplit.emplace_back(
+                                asteroidPos->value,
+                                asteroidVelocity->value,
+                                asteroidComp->size
+                            );
+                            result.destroyedAsteroidPositions.push_back(asteroidPos->value);
+                            result.destroyedAsteroidsCount++;
                         }
+                        asteroidIt = asteroids.erase(asteroidIt);
                     } else {
                         ++asteroidIt;
                     }
                 } else {
                     ++asteroidIt;
                 }
+            } else {
+                ++asteroidIt;
             }
+        }
 
-            // boss
-            if (boss) {
-                auto *bossPos = boss->getComponent<Position>();
-                auto *bossRender = boss->getComponent<Shape>();
-                auto *bossHealth = boss->getComponent<Health>();
+        // boss
+        if (boss) {
+            auto *bossPos = boss->getComponent<Position>();
+            auto *bossRender = boss->getComponent<Shape>();
+            auto *bossHealth = boss->getComponent<Health>();
 
-                if (bossPos && bossRender && bossHealth) {
-                    sf::Vector2f bossCenter = bossPos->value;
-                    float bossRadius = std::max(
-                                           bossRender->shape.getSize().x,
-                                           bossRender->shape.getSize().y
-                                       ) / 2.f;
+            if (bossPos && bossRender && bossHealth) {
+                sf::Vector2f bossCenter = bossPos->value;
+                float bossRadius = std::max(
+                                       bossRender->shape.getSize().x,
+                                       bossRender->shape.getSize().y
+                                   ) / 2.f;
 
-                    float distance = distanceFromPointToSegment(bossCenter, laserStart, laserEnd);
-                    if (distance <= bossRadius + laserHalfWidth) {
-                        bossHealth->value -= laserDmg->value;
-                        result.isBossHit = true;
-                    }
+                float distance = distanceFromPointToSegment(bossCenter, laserStart, laserEnd);
+                if (distance <= bossRadius + laserHalfWidth) {
+                    bossHealth->value -= laserDmg->value;
+                    result.isBossHit = true;
                 }
             }
         }
     }
+};
+
+void CollisionSystem::processPowerUpPickups(
+    Entity &player,
+    std::vector<std::unique_ptr<Entity> > &powerUpPickups,
+    Result &result
+) {
+    auto playerPos = player.getComponent<Position>();
+    auto playerRender = player.getComponent<Shape>();
 
     if (playerPos && playerRender) {
         sf::Vector2f playerSize = playerRender->shape.getSize();
         sf::Vector2f playerCenter = playerPos->value;
 
         for (auto it = powerUpPickups.begin(); it != powerUpPickups.end();) {
-            auto* pickupPos = (*it)->getComponent<Position>();
-            auto* pickupRender = (*it)->getComponent<Shape>();
-            auto* pickupType = (*it)->getComponent<PowerUpPickup>();
+            auto *pickupPos = (*it)->getComponent<Position>();
+            auto *pickupRender = (*it)->getComponent<Shape>();
+            auto *pickupType = (*it)->getComponent<PowerUpPickup>();
 
             if (!pickupPos || !pickupRender || !pickupType) {
                 ++it;
@@ -360,6 +405,4 @@ CollisionSystem::Result CollisionSystem::update(
             }
         }
     }
-
-    return result;
-}
+};

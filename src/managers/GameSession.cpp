@@ -26,7 +26,6 @@
 #include "systems/InvincibilitySystem.hpp"
 #include "systems/PowerUpDropSystem.hpp"
 
-// TODO: МАССОВОЕ ВНЕДРЕНИЕ ТЕКУСТУР
 float GameSession::getPlayerHp() const {
     if (const auto *playerHp = player->getComponent<Health>()) {
         return playerHp->value;
@@ -210,7 +209,7 @@ void GameSession::handleLevelUpAndPowerUps() {
 
 void GameSession::processCollisions(float dt) {
     Entity *laserPtr = playerLaser ? playerLaser.get() : nullptr;
-    auto result = CollisionSystem::update(
+    auto result = collisionSystem.update(
         *player,
         laserPtr,
         bullets,

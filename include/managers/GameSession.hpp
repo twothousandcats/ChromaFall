@@ -16,6 +16,7 @@
 #include "entities/Entity.hpp"
 #include "systems/BossBehaviorSystem.hpp"
 #include "systems/BossSystem.hpp"
+#include "systems/CollisionSystem.hpp"
 #include "systems/PowerUpDropSystem.hpp"
 #include "systems/TextureAnimationSystem.hpp"
 
@@ -33,6 +34,7 @@ public:
     void init();
 
     void setOverlayState(OverlayState state);
+
     void createPlayer();
 
     [[nodiscard]] float getPlayerHp() const;
@@ -72,19 +74,31 @@ public:
 
     // гетеры для UI exp
     int getPlayerLevel() const;
+
     int getPlayerCurrentExp() const;
+
     int getPlayerExpForNextLevel() const;
 
 private:
     void updateBackground(float dt);
+
     void updatePlayerAndWeapon(float dt);
-    void updateLaserWeapon(Position* playerPos, Upgrades* upgrades);
-    void updateBulletWeapon(Position* playerPos, Upgrades* upgrades);
+
+    void updateLaserWeapon(Position *playerPos, Upgrades *upgrades);
+
+    void updateBulletWeapon(Position *playerPos, Upgrades *upgrades);
+
     void updateEntities(float dt);
+
     void updateAsteroidSpawning();
+
     void updateBossAndTraps(float dt);
+
     void processCollisions(float dt);
+
     void handleLevelUpAndPowerUps();
+
+    void updateWorld(float dt);
 
     // сущности
     std::unique_ptr<Entity> player;
@@ -98,9 +112,10 @@ private:
     // ловушки
     std::vector<std::unique_ptr<Entity> > trapLasers;
     // улучшения
-    std::vector<std::unique_ptr<Entity>> powerUpPickups;
+    std::vector<std::unique_ptr<Entity> > powerUpPickups;
 
     // системы
+    CollisionSystem collisionSystem;
     WaveSystem waveSystem{TOTAL_WAVES, KILLS_TO_WAVE_UP};
     BossSystem bossSystem;
     BossBehaviorSystem bossBehaviorSystem;

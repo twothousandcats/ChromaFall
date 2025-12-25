@@ -68,8 +68,6 @@ std::unique_ptr<Entity> AsteroidSpawnSystem::createAsteroid(
             break;
     }
 
-    // Если !текстура - цвет
-    // sf::Color shapeColor = texture ? sf::Color::White : currentTemplate->color;
 
     if (texture) {
         std::cout << "yes" << std::endl;
