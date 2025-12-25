@@ -6,6 +6,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <optional>
+#include <random>
 
 #include "config/GameConfig.hpp"
 #include "config/SetupConfig.hpp"
@@ -64,11 +65,11 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
         exit(1);
     }
 
-    // явно (музыка)
-    switchToMainMenu();
-
     // загрузка звуков
     auto &audio = AudioManager::getInstance();
+
+    // явно (музыка)
+    switchToMainMenu();
 
     // Shooting
     audio.loadSound(AUDIO_SFX_BLASTER_SHOOT_NAME, AUDIO_SFX_BLASTER_SHOOT_PATH);
@@ -335,7 +336,15 @@ void GameStateManager::switchToGameplay() {
     }
 
     if (!isGameMusicPlaying) {
-        AudioManager::getInstance().playMusic(AUDIO_MUSIC_SESSION);
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_int_distribution<int> dis(0, 1);
+
+        const char *selectedTrack = (dis(gen) == 0)
+                                        ? AUDIO_MUSIC_SESSION_1
+                                        : AUDIO_MUSIC_SESSION_2;
+
+        AudioManager::getInstance().playMusic(selectedTrack);
         isGameMusicPlaying = true;
     }
 }

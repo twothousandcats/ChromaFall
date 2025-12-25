@@ -21,7 +21,8 @@ constexpr float AUDIO_SFX_VOLUME_MIN = 0.f;
 constexpr float AUDIO_SFX_VOLUME_MAX = 100.f;
 
 // music
-constexpr auto AUDIO_MUSIC_SESSION = "assets/audio/music/acid_techno_session.ogg"; // 999999999-000000005
+constexpr auto AUDIO_MUSIC_SESSION_1 = "assets/audio/music/acid_techno_session.ogg"; // 999999999 - 000000005
+constexpr auto AUDIO_MUSIC_SESSION_2 = "assets/audio/music/pulsar_sky_session.ogg"; // Ilya Gadaev - Pulsar Sky
 constexpr auto AUDIO_MUSIC_THEME = "assets/audio/music/theme.ogg"; // me - Vigil
 constexpr float AUDIO_MUSIC_VOLUME_MIN = 0.0f;
 constexpr float AUDIO_MUSIC_VOLUME_MAX = 100.0f;
