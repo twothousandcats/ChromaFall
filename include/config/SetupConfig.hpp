@@ -5,8 +5,8 @@
 constexpr float HALF_DIVISOR = 2.f;
 
 // SIZE
-constexpr unsigned WINDOW_WIDTH = 800;
-constexpr unsigned WINDOW_HEIGHT = 600;
+constexpr unsigned WINDOW_WIDTH = 1200;
+constexpr unsigned WINDOW_HEIGHT = 800;
 constexpr sf::Vector2u WINDOW_SIZE = {WINDOW_WIDTH, WINDOW_HEIGHT};
 
 // CENTER

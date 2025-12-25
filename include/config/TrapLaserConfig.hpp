@@ -4,7 +4,7 @@
 #include "SetupConfig.hpp"
 
 constexpr int TRAP_LASER_COUNT_MIN = 2;
-constexpr int TRAP_LASER_COUNT_MAX = 4;
+constexpr int TRAP_LASER_COUNT_MAX = 5;
 
 constexpr float TRAP_LASER_MARGIN = 50.f;
 
