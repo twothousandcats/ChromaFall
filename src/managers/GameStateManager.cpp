@@ -340,246 +340,268 @@ void GameStateManager::switchToGameplay() {
     }
 }
 
-// TODO: какой-то страшный chain code выходит(спросить)
-// state pattern
+void GameStateManager::handleMainMenuEvents(const sf::Event &event) {
+    if (event.is<sf::Event::MouseButtonPressed>()) {
+        const auto &mouseEv = *event.getIf<sf::Event::MouseButtonPressed>();
+        if (mouseEv.button == sf::Mouse::Button::Left) {
+            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+            if (startButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+                AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
+                switchToGameplay();
+            } else if (exitButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+                window.close();
+            }
+        }
+    } else if (event.is<sf::Event::KeyPressed>()) {
+        const auto &keyEv = *event.getIf<sf::Event::KeyPressed>();
+        if (keyEv.code == sf::Keyboard::Key::Space) {
+            AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
+            switchToGameplay();
+        }
+    }
+}
+
+void GameStateManager::handlePowerUpSelectionInput(sf::Keyboard::Key key) {
+    if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A) {
+        gameSession->selectPrevPowerUp();
+        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_UPGRADE_NAME);
+    } else if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D) {
+        gameSession->selectNextPowerUp();
+        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_UPGRADE_NAME);
+    } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
+        gameSession->confirmPowerUpSelection();
+    }
+}
+
+void GameStateManager::handlePauseMenuInput(sf::Keyboard::Key key) {
+    if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W) {
+        selectedPauseOption = PauseOption::RESUME;
+        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
+    } else if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S) {
+        selectedPauseOption = PauseOption::MAIN_MENU;
+        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
+    } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
+        if (selectedPauseOption == PauseOption::RESUME) {
+            gameSession->setOverlayState(OverlayState::NONE);
+            AudioManager::getInstance().resumeMusic();
+        } else {
+            switchToMainMenu();
+        }
+    }
+}
+
+void GameStateManager::handleGameplayEvents(const sf::Event &event) {
+    if (!gameSession) return;
+
+    auto overlay = gameSession->getOverlayState();
+
+    if (event.is<sf::Event::KeyPressed>()) {
+        const auto &key = event.getIf<sf::Event::KeyPressed>()->code;
+
+        if (key == sf::Keyboard::Key::Escape) {
+            if (overlay == OverlayState::PAUSE) {
+                gameSession->setOverlayState(OverlayState::NONE);
+                AudioManager::getInstance().resumeMusic();
+            } else {
+                gameSession->setOverlayState(OverlayState::PAUSE);
+                selectedPauseOption = PauseOption::RESUME;
+                AudioManager::getInstance().pauseMusic();
+            }
+            return;
+        }
+
+        if (overlay == OverlayState::POWER_UP_SELECTION) {
+            handlePowerUpSelectionInput(key);
+        } else if (overlay == OverlayState::PAUSE) {
+            handlePauseMenuInput(key);
+        }
+    }
+}
+
+// states
 void GameStateManager::handleEvents() {
     while (auto event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
             window.close();
-        } else if (currentState == GameState::Gameplay && gameSession) {
-            auto overlay = gameSession->getOverlayState();
-
-            if (event->is<sf::Event::KeyPressed>()) {
-                const auto &key = event->getIf<sf::Event::KeyPressed>()->code;
-                if (key == sf::Keyboard::Key::Escape) {
-                    if (overlay == OverlayState::PAUSE) {
-                        gameSession->setOverlayState(OverlayState::NONE);
-                        AudioManager::getInstance().resumeMusic();
-                    } else {
-                        gameSession->setOverlayState(OverlayState::PAUSE);
-                        selectedPauseOption = PauseOption::RESUME; // сброс выбора
-                        AudioManager::getInstance().pauseMusic();
-                    }
-                    continue;
-                }
-            }
-
-            if (overlay == OverlayState::POWER_UP_SELECTION) {
-                if (event->is<sf::Event::KeyPressed>()) {
-                    const auto &key = event->getIf<sf::Event::KeyPressed>()->code;
-                    if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A) {
-                        gameSession->selectPrevPowerUp();
-                        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_UPGRADE_NAME);
-                    } else if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D) {
-                        gameSession->selectNextPowerUp();
-                        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_UPGRADE_NAME);
-                    } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
-                        gameSession->confirmPowerUpSelection();
-                    }
-                }
-            } else if (overlay == OverlayState::PAUSE) {
-                if (event->is<sf::Event::KeyPressed>()) {
-                    const auto &key = event->getIf<sf::Event::KeyPressed>()->code;
-                    if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W) {
-                        selectedPauseOption = PauseOption::RESUME;
-                        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
-                    } else if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S) {
-                        selectedPauseOption = PauseOption::MAIN_MENU;
-                        AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
-                    } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
-                        if (selectedPauseOption == PauseOption::RESUME) {
-                            gameSession->setOverlayState(OverlayState::NONE);
-                            AudioManager::getInstance().resumeMusic();
-                        } else {
-                            switchToMainMenu();
-                        }
-                    }
-                }
-            }
-        } else if (currentState == GameState::MainMenu) {
-            if (event->is<sf::Event::MouseButtonPressed>()) {
-                const auto &mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
-                if (mouseEvent->button == sf::Mouse::Button::Left) {
-                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                    sf::FloatRect startButtonBounds = startButton.getGlobalBounds();
-                    sf::FloatRect exitButtonBounds = exitButton.getGlobalBounds();
-                    if (startButtonBounds.contains(static_cast<sf::Vector2f>(mousePos))) {
-                        switchToGameplay();
-                    }
-                    if (exitButtonBounds.contains(static_cast<sf::Vector2f>(mousePos))) {
-                        window.close();
-                    }
-                }
-            }
-        } else if (event->is<sf::Event::KeyPressed>()) {
-            const auto &keyEvent = event->getIf<sf::Event::KeyPressed>();
-            if (keyEvent->code == sf::Keyboard::Key::Space && currentState == GameState::MainMenu) {
-                switchToGameplay();
-            }
+            return;
         }
+
+        switch (currentState) {
+            case GameState::MainMenu:
+                handleMainMenuEvents(*event);
+                break;
+            case GameState::Gameplay:
+                handleGameplayEvents(*event);
+                break;
+        }
+    }
+}
+
+void GameStateManager::updateGameplay(float deltaTime) {
+    if (!gameSession) return;
+    gameSession->update(deltaTime);
+
+    if (gameSession->isGameOver()) {
+        currentState = GameState::GameOver;
+        infoClock.restart();
+    } else if (gameSession->isVictory()) {
+        currentState = GameState::Victory;
+        infoClock.restart();
+    }
+}
+
+void GameStateManager::updateResultScreen() {
+    if (infoClock.getElapsedTime().asSeconds() > TIME_TO_SHOW_STATUS) {
+        switchToMainMenu();
+        infoClock.restart();
     }
 }
 
 void GameStateManager::update() {
     float deltaTime = gameClock.restart().asSeconds();
-
     if (deltaTime > DT_COMPENSATE_FACTOR) {
         deltaTime = DT_COMPENSATE_FACTOR;
     }
 
-    if (currentState == GameState::Gameplay && gameSession) {
-        gameSession->update(deltaTime);
-        if (gameSession->isGameOver()) {
-            currentState = GameState::GameOver;
-            infoClock.restart();
-        } else if (gameSession->isVictory()) {
-            currentState = GameState::Victory;
-            infoClock.restart();
-        }
+    switch (currentState) {
+        case GameState::Gameplay:
+            updateGameplay(deltaTime);
+            break;
+        case GameState::Victory:
+        case GameState::GameOver:
+            updateResultScreen();
+            break;
+        default:
+            break;
     }
+}
+
+void GameStateManager::renderMainMenu() {
+    if (titleText) window.draw(*titleText);
+    window.draw(startButton);
+    if (startText) window.draw(*startText);
+    window.draw(exitButton);
+    if (exitText) window.draw(*exitText);
+}
+
+void GameStateManager::renderGameplay() {
+    if (!gameSession) return;
+
+    gameSession->render(window);
+    renderGameplayHUD();
+    renderGameplayOverlays();
+}
+
+void GameStateManager::renderGameplayHUD() {
+    // Wave
+    window.draw(createText(
+        "Wave: " + std::to_string(gameSession->getCurrentWave()) + " / " +
+        std::to_string(gameSession->getTotalWaves()),
+        INFO_WAVE_POS, font, INFO_FZ, INFO_TEXT_COLOR,
+        sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
+    ));
+
+    // Kills
+    window.draw(createText(
+        "Kills: " + std::to_string(gameSession->getCurrentWaveKilledCount()) + " / " +
+        std::to_string(gameSession->getCurrentWaveTotalCount()),
+        INFO_WAVE_KILLS_POS, font, INFO_FZ, INFO_TEXT_COLOR,
+        sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
+    ));
+
+    // Level
+    window.draw(createText(
+        "Lvl: " + std::to_string(gameSession->getPlayerLevel()),
+        INFO_LEVEL_POS, font, INFO_FZ, INFO_TEXT_COLOR,
+        sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
+    ));
+
+    // XP
+    window.draw(createText(
+        "XP: " + std::to_string(gameSession->getPlayerCurrentExp()) + " / " +
+        std::to_string(gameSession->getPlayerExpForNextLevel()),
+        INFO_EXP_POS, font, INFO_FZ, INFO_TEXT_COLOR,
+        sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
+    ));
+
+    // HP
+    if (hpSprite) {
+        const auto spriteSize = static_cast<float>(hpSprite->getTextureRect().size.y);
+        hpSprite->setPosition({INFO_HP_POS_X, INFO_HP_POS_Y});
+        hpSprite->setOrigin({0.f, spriteSize});
+        window.draw(*hpSprite);
+
+        auto hpText = createText(
+            std::to_string(static_cast<int>(gameSession->getPlayerHp())),
+            {INFO_HP_POS_X + INFO_PADDING / 2.f + spriteSize, INFO_HP_POS_Y - INFO_FZ / 2.f},
+            font, INFO_FZ, INFO_TEXT_COLOR,
+            sf::Text::Regular, TextOrigin::BOTTOM_LEFT
+        );
+        window.draw(hpText);
+
+        sf::RectangleShape hpBar;
+        float w = spriteSize + hpText.getLocalBounds().size.x + INFO_PADDING * 2.f + INFO_FZ / 2.f;
+        float h = INFO_FZ + INFO_PADDING * 2.f;
+        hpBar.setPosition({0.f, WINDOW_HEIGHT - h});
+        hpBar.setSize({w, h});
+        hpBar.setFillColor(sf::Color::Transparent);
+        hpBar.setOutlineColor(INFO_HP_BORDER_COLOR);
+        hpBar.setOutlineThickness(INFO_HP_BORDER_WIDTH);
+        window.draw(hpBar);
+    }
+}
+
+void GameStateManager::renderGameplayOverlays() {
+    if (!gameSession || gameSession->getOverlayState() == OverlayState::NONE) {
+        return;
+    }
+
+    sf::RectangleShape overlayBg({static_cast<float>(WINDOW_WIDTH), static_cast<float>(WINDOW_HEIGHT)});
+    overlayBg.setFillColor(OVERLAY_BGC);
+    window.draw(overlayBg);
+
+    switch (gameSession->getOverlayState()) {
+        case OverlayState::POWER_UP_SELECTION:
+            renderPowerUpOverlay(window);
+            break;
+        case OverlayState::PAUSE:
+            renderPauseOverlay(window);
+            break;
+        default:
+            break;
+    }
+}
+
+void GameStateManager::renderVictory() {
+    window.draw(createText(
+        STATE_VICTORY_TEXT, WINDOW_CENTER, font, STATE_TEXT_SIZE,
+        STATE_VICTORY_TEXT_COLOR, sf::Text::Bold
+    ));
+}
+
+void GameStateManager::renderGameOver() {
+    window.draw(createText(
+        STATE_GAMEOVER_TEXT, WINDOW_CENTER, font, STATE_TEXT_SIZE,
+        STATE_GAMEOVER_TEXT_COLOR, sf::Text::Bold
+    ));
 }
 
 void GameStateManager::render() {
     window.clear(sf::Color::Black);
 
-    if (currentState == GameState::MainMenu) {
-        if (titleText) window.draw(*titleText);
-        window.draw(startButton);
-        if (startText) window.draw(*startText);
-        window.draw(exitButton);
-        if (exitText) window.draw(*exitText);
-    } else if (currentState == GameState::Gameplay && gameSession) {
-        gameSession->render(window);
-
-        // wave UI
-        const sf::Text waveText = createText(
-            "Wave: " + std::to_string(gameSession->getCurrentWave()) + " / " + std::to_string(
-                gameSession->getTotalWaves()
-            ),
-            INFO_WAVE_POS,
-            font,
-            INFO_FZ,
-            INFO_TEXT_COLOR,
-            sf::Text::Regular,
-            TextOrigin::BOTTOM_RIGHT
-        );
-        window.draw(waveText);
-
-        // kills UI
-        const sf::Text killsText = createText(
-            "Kills: " + std::to_string(gameSession->getCurrentWaveKilledCount()) + " / " + std::to_string(
-                gameSession->getCurrentWaveTotalCount()
-            ),
-            INFO_WAVE_KILLS_POS,
-            font,
-            INFO_FZ,
-            INFO_TEXT_COLOR,
-            sf::Text::Regular,
-            TextOrigin::BOTTOM_RIGHT
-        );
-        window.draw(killsText);
-
-        // lvl ui
-        const sf::Text levelText = createText(
-            "Lvl: " + std::to_string(gameSession->getPlayerLevel()),
-            INFO_LEVEL_POS,
-            font,
-            INFO_FZ,
-            INFO_TEXT_COLOR,
-            sf::Text::Regular,
-            TextOrigin::BOTTOM_RIGHT
-        );
-        window.draw(levelText);
-
-        // exp ui
-        const sf::Text expText = createText(
-            "XP: " + std::to_string(gameSession->getPlayerCurrentExp()) +
-            " / " + std::to_string(gameSession->getPlayerExpForNextLevel()),
-            INFO_EXP_POS,
-            font,
-            INFO_FZ,
-            INFO_TEXT_COLOR,
-            sf::Text::Regular,
-            TextOrigin::BOTTOM_RIGHT
-        );
-        window.draw(expText);
-
-        // hp ui
-        if (hpSprite.has_value()) {
-            const auto spriteSize = static_cast<float>(hpSprite->getTextureRect().size.y);
-            hpSprite->setPosition({INFO_HP_POS_X, INFO_HP_POS_Y});
-            hpSprite->setOrigin({0.f, spriteSize});
-            window.draw(*hpSprite);
-
-            const sf::Text hpText = createText(
-                std::to_string(static_cast<int>(gameSession->getPlayerHp())),
-                {INFO_HP_POS_X + INFO_PADDING / 2.f + spriteSize, INFO_HP_POS_Y - INFO_FZ / 2.f},
-                font,
-                INFO_FZ,
-                INFO_TEXT_COLOR,
-                sf::Text::Regular,
-                TextOrigin::BOTTOM_LEFT
-            );
-            window.draw(hpText);
-
-            sf::RectangleShape hpBar;
-            float sizeX = spriteSize + hpText.getLocalBounds().size.x + INFO_PADDING * 2.f + INFO_FZ / 2.f;
-            float sizeY = hpText.getLocalBounds().size.x + INFO_PADDING * 2.f + INFO_FZ / 2.f;
-            float posX = 0.f;
-            float posY = WINDOW_HEIGHT - sizeY;
-            hpBar.setPosition({posX, posY});
-            hpBar.setFillColor(sf::Color::Transparent);
-            hpBar.setOutlineColor(INFO_HP_BORDER_COLOR);
-            hpBar.setOutlineThickness(INFO_HP_BORDER_WIDTH);
-            hpBar.setSize({sizeX, sizeY});
-            window.draw(hpBar);
-        }
-
-        // определение оверлеев
-        if (gameSession->getOverlayState() != OverlayState::NONE) {
-            // Полупрозрачный фон
-            sf::RectangleShape overlayBg(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
-            overlayBg.setFillColor(OVERLAY_BGC);
-            window.draw(overlayBg);
-
-            if (gameSession->getOverlayState() == OverlayState::POWER_UP_SELECTION) {
-                renderPowerUpOverlay(window);
-            } else if (gameSession->getOverlayState() == OverlayState::PAUSE) {
-                renderPauseOverlay(window);
-            }
-        }
-    } else if (currentState == GameState::Victory) {
-        const sf::Text victoryText = createText(
-            STATE_VICTORY_TEXT,
-            WINDOW_CENTER,
-            font,
-            STATE_TEXT_SIZE,
-            STATE_VICTORY_TEXT_COLOR,
-            sf::Text::Bold
-        );
-        window.draw(victoryText);
-
-        // Через 3 секунды — в меню
-        if (infoClock.getElapsedTime().asSeconds() > TIME_TO_SHOW_STATUS) {
-            switchToMainMenu();
-            infoClock.restart();
-        }
-    } else if (currentState == GameState::GameOver) {
-        const sf::Text gameLostText = createText(
-            STATE_GAMEOVER_TEXT,
-            WINDOW_CENTER,
-            font,
-            STATE_TEXT_SIZE,
-            STATE_GAMEOVER_TEXT_COLOR,
-            sf::Text::Bold
-        );
-        window.draw(gameLostText);
-
-        // Через 3 секунды — в меню
-        if (infoClock.getElapsedTime().asSeconds() > TIME_TO_SHOW_STATUS) {
-            switchToMainMenu();
-            infoClock.restart();
-        }
+    switch (currentState) {
+        case GameState::MainMenu:
+            renderMainMenu();
+            break;
+        case GameState::Gameplay:
+            renderGameplay();
+            break;
+        case GameState::Victory:
+            renderVictory();
+            break;
+        case GameState::GameOver:
+            renderGameOver();
+            break;
     }
 
     window.display();

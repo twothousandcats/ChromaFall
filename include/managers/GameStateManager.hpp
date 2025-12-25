@@ -65,6 +65,30 @@ private:
         const sf::Color &textColor = sf::Color({255, 255, 255, 255})
     );
 
+    void handleMainMenuEvents(const sf::Event &event);
+
+    void handlePowerUpSelectionInput(sf::Keyboard::Key key);
+
+    void handlePauseMenuInput(sf::Keyboard::Key key);
+
+    void handleGameplayEvents(const sf::Event &event);
+
+    void updateGameplay(float deltaTime);
+
+    void updateResultScreen();
+
+    void renderMainMenu();
+
+    void renderGameplay();
+
+    void renderGameplayHUD();
+
+    void renderGameplayOverlays();
+
+    void renderVictory();
+
+    void renderGameOver();
+
     sf::RenderWindow &window;
     GameState currentState = GameState::MainMenu;
 
