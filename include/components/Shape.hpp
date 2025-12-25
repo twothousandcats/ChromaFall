@@ -13,8 +13,5 @@ struct Shape final : Component {
         shape.setSize({w, h});
         shape.setOrigin({w / 2.f, h / 2.f});
         shape.setFillColor(color);
-        // TODO: убрать перед релизом
-        // shape.setOutlineColor(color);
-        // shape.setOutlineThickness(1);
     }
 };

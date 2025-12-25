@@ -16,9 +16,8 @@
 
 AsteroidSpawnSystem::AsteroidSpawnSystem()
     : randomEngine(std::random_device{}()),
-      asteroidTypeDist(0, 2),
+      asteroidTypeDist(0, 2), // 0 .. 2
       asteroidIntervalDist(MIN_GEN_INTERVAL, MAX_GEN_INTERVAL) {
-    // TODO: стоит ли вообще дропать?
     if (!smallAsteroidTexture.loadFromFile(ASTEROID_TEXTURE_PATH_SMALL)) {
         exit(1);
     }
@@ -36,7 +35,7 @@ float AsteroidSpawnSystem::getSpawnIntervalForWave(const int currentWave) {
         interval *= INTERVAL_REDUCTION_FACTOR;
     }
 
-    return std::max(0.3f, interval);
+    return std::max(MIN_EDGE_SPAWN_INTERVAL, interval);
 }
 
 std::unique_ptr<Entity> AsteroidSpawnSystem::createAsteroid(
@@ -66,13 +65,6 @@ std::unique_ptr<Entity> AsteroidSpawnSystem::createAsteroid(
             break;
         case AsteroidSize::SMALL: texture = &smallAsteroidTexture;
             break;
-    }
-
-
-    if (texture) {
-        std::cout << "yes" << std::endl;
-    } else {
-        std::cout << "no" << std::endl;
     }
 
     auto asteroid = std::make_unique<Entity>();
@@ -119,9 +111,9 @@ void AsteroidSpawnSystem::spawnChildAsteroids(
     }
 
     std::uniform_real_distribution<float> angleDist(-ASTEROID_ANGLE_SPREAD_FACTOR, ASTEROID_ANGLE_SPREAD_FACTOR);
-    std::uniform_real_distribution<float> speedMult(0.8f, 1.2f);
+    std::uniform_real_distribution<float> speedMult(ASTEROID_SPD_MULT_MIN, ASTEROID_SPD_MULT_MAX);
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < ASTEROID_SPLASH_COUNT; ++i) {
         const float angleOffset = angleDist(randomEngine);
         const float speedFactor = speedMult(randomEngine);
 

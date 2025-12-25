@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include "managers/GameStateManager.hpp"
 #include "config/SetupConfig.hpp"
+#include "config/UIConfig.hpp"
 
 int main() {
     sf::ContextSettings settings;
@@ -8,7 +9,7 @@ int main() {
 
     sf::RenderWindow window(
         sf::VideoMode(WINDOW_SIZE),
-        "Chromafall",
+        TITLE_TEXT,
         sf::Style::Default,
         sf::State::Windowed,
         settings

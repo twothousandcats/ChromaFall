@@ -3,6 +3,7 @@
 
 // GENERAL
 constexpr float HALF_DIVISOR = 2.f;
+constexpr float MENU_TEXT_FACTOR = 6.f;
 
 // SIZE
 constexpr unsigned WINDOW_WIDTH = 1200;

@@ -97,5 +97,29 @@ constexpr sf::Vector2f INFO_EXP_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGH
 const std::string BASE_FONT_REGULAR = "assets/fonts/Orbitron-Regular.ttf";
 const std::string BASE_FONT_BOLD = "assets/fonts/Orbitron-Bold.ttf";
 const std::string BASE_BACKGROUND = "assets/images/bg_image.png";
-// const std::string BASE_BACKGROUND = "assets/images/bg_image2.jpg";
 const std::string BASE_HEART = "assets/images/textures/heart.png";
+
+// upgrades
+// desc
+constexpr auto UPGRADE_DESC_HP = "Increases 1 max health points";
+constexpr auto UPGRADE_DESC_DMG = "Increases weapon damage by 30%";
+constexpr auto UPGRADE_DESC_BUL = "Increases number of bullets per shot";
+constexpr auto UPGRADE_DESC_ASPD = "Increases attack speed by 10%";
+constexpr auto UPGRADE_DESC_BLASTER = "Unlocks Blaster";
+constexpr auto UPGRADE_DESC_SHOTGUN = "Unlocks shotgun";
+constexpr auto UPGRADE_DESC_LASER = "Unlocks laser";
+// selectors
+constexpr auto UPGRADE_SELECTOR_HP = "+HP";
+constexpr auto UPGRADE_SELECTOR_DMG = "+DMG";
+constexpr auto UPGRADE_SELECTOR_BUL = "+BLT";
+constexpr auto UPGRADE_SELECTOR_ASPD = "+ASPD";
+constexpr auto UPGRADE_SELECTOR_BLASTER = "Blaster";
+constexpr auto UPGRADE_SELECTOR_SHOTGUN = "Shotgun";
+constexpr auto UPGRADE_SELECTOR_LASER = "Laser";
+// hint
+constexpr auto UPGRADE_HINT = "PRESS SPACE TO CONFIRM";
+
+// pause
+constexpr auto PAUSE_TEXT = "Pause";
+constexpr auto RESUME_TEXT = "Pause";
+constexpr auto MAIN_MENU_TEXT = "Pause";

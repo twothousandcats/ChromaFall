@@ -66,8 +66,8 @@ void GameSession::confirmPowerUpSelection() {
 
 void GameSession::updateLaserWeapon(Position *playerPos, Upgrades *upgrades) {
     bool isShooting = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
-    float muzzleX = playerPos->value.x - LASER_WIDTH / 2.f;
-    float muzzleY = playerPos->value.y - PLAYER_SIDE / 2.f;
+    float muzzleX = playerPos->value.x - LASER_WIDTH / HALF_DIVISOR;
+    float muzzleY = playerPos->value.y - PLAYER_SIDE / HALF_DIVISOR;
     sf::Vector2f muzzlePos(muzzleX, muzzleY);
     float laserDamage = LASER_BASE_DMG * upgrades->damageMultiplier;
 
@@ -201,7 +201,7 @@ void GameSession::handleLevelUpAndPowerUps() {
         AudioManager::getInstance().playSound(AUDIO_SFX_LVLUP_NAME);
         overlayState = OverlayState::POWER_UP_SELECTION;
         if (auto *upgrades = player->getComponent<Upgrades>()) {
-            powerUpOptions = powerUpSystem.generateOptions(3, upgrades->weapon);
+            powerUpOptions = powerUpSystem.generateOptions(UPGRADES_COUNT, upgrades->weapon);
         }
         selectedPowerUpIndex = 0;
     }
@@ -357,7 +357,6 @@ void GameSession::render(
         bgSprite->setPosition({0, -currentScrollOffset});
         window.draw(*bgSprite);
 
-        // Второй спрайт — смещён на actualBgHeight вверх
         sf::Sprite second = *bgSprite;
         second.setPosition({0, -currentScrollOffset - actualBgHeight});
         window.draw(second);

@@ -2,6 +2,8 @@
 
 #include "config/BulletConfig.hpp"
 
+constexpr int UPGRADES_COUNT = 3;
+
 constexpr float UPGRADES_BASE_HP = 1.f;
 constexpr float UPGRADES_BASE_DMG_MULT = 1.f;
 constexpr int UPGRADES_BASE_BULLET_COUNT = 0;

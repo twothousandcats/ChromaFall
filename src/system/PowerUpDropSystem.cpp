@@ -45,9 +45,10 @@ void PowerUpDropSystem::tryDropPowerUp(
     WeaponType currentWeapon,
     std::mt19937 &rng
 ) {
+    // сген > POWER_UP_DROP_CHANCE_PERCENT
     static std::uniform_real_distribution<float> dist(0.0f, 100.0f);
     if (dist(rng) > POWER_UP_DROP_CHANCE_PERCENT) {
-        return; // шанс
+        return;
     }
 
     // усиления
@@ -61,14 +62,6 @@ void PowerUpDropSystem::tryDropPowerUp(
     auto pickup = std::make_unique<Entity>();
     pickup->addComponent(std::make_unique<Position>(spawnPos.x, spawnPos.y));
     pickup->addComponent(std::make_unique<PowerUpPickup>(chosen));
-
-    // auto renderable = std::make_unique<Shape>(
-    //     POWER_UP_PICKUP_RADIUS * HALF_DIVISOR,
-    //     POWER_UP_PICKUP_RADIUS * HALF_DIVISOR,
-    //     sf::Color::White
-    // );
-    // renderable->shape.setOrigin({POWER_UP_PICKUP_RADIUS, POWER_UP_PICKUP_RADIUS});
-    // pickup->addComponent(std::move(renderable));
     pickup->addComponent(std::make_unique<Velocity>(0.f, POWER_UP_DROP_SPEED));
 
     const sf::Texture *texture = &powerUpTexture;

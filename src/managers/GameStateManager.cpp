@@ -116,7 +116,7 @@ sf::Text GameStateManager::createText(
             originPoint = {textBounds.size.x, textBounds.size.y};
             break;
         case TextOrigin::CENTER:
-            originPoint = textBounds.size / 2.f;
+            originPoint = textBounds.size / HALF_DIVISOR;
             break;
     }
     text.setOrigin(originPoint);
@@ -135,7 +135,7 @@ std::pair<sf::RectangleShape, sf::Text> GameStateManager::createButton(
 ) {
     const sf::Text buttonText = createText(
         text,
-        positionCenter,
+        {positionCenter.x, positionCenter.y - static_cast<float>(charSize) / MENU_TEXT_FACTOR},
         font,
         charSize,
         textColor
@@ -160,23 +160,23 @@ void GameStateManager::renderPowerUpOverlay(
 
     // Описания
     const std::vector<std::string> descriptions = {
-        "Increases 1 max health points",
-        "Increases weapon damage by 30%",
-        "Increases number of bullets per shot",
-        "Increases attack speed by 25%",
-        "Unlocks Blaster",
-        "Unlocks shotgun",
-        "Unlocks laser"
+        UPGRADE_DESC_HP,
+        UPGRADE_DESC_DMG,
+        UPGRADE_DESC_BUL,
+        UPGRADE_DESC_ASPD,
+        UPGRADE_DESC_BLASTER,
+        UPGRADE_DESC_SHOTGUN,
+        UPGRADE_DESC_LASER
     };
     // Усиления
     const std::vector<std::string> labels = {
-        "+HP",
-        "+DMG",
-        "+BLT",
-        "+ASPD",
-        "Blaster",
-        "Shotgun",
-        "Laser"
+        UPGRADE_SELECTOR_HP,
+        UPGRADE_SELECTOR_DMG,
+        UPGRADE_SELECTOR_BUL,
+        UPGRADE_SELECTOR_ASPD,
+        UPGRADE_SELECTOR_BLASTER,
+        UPGRADE_SELECTOR_SHOTGUN,
+        UPGRADE_SELECTOR_LASER
     };
 
     // рендер descField
@@ -216,7 +216,7 @@ void GameStateManager::renderPowerUpOverlay(
         cell.setOutlineColor(outlineColor);
         cell.setOutlineThickness(OVERLAY_UPGRADE_BTN_OUT_THICKNESS);
         const sf::FloatRect cellBounds = cell.getLocalBounds();
-        cell.setOrigin(cellBounds.size / 2.f);
+        cell.setOrigin(cellBounds.size / HALF_DIVISOR);
         cell.setRotation(sf::degrees(45.f));
         window.draw(cell);
 
@@ -235,7 +235,7 @@ void GameStateManager::renderPowerUpOverlay(
     // hint
     if (static_cast<int>(blinkClock.getElapsedTime().asSeconds() * 2) % 2 == 0) {
         const sf::Text hint = createText(
-            "PRESS SPACE TO CONFIRM",
+            UPGRADE_HINT,
             {WINDOW_CENTER_X, WINDOW_HEIGHT - static_cast<float>(OVERLAY_DESC_TEXT_FZ) - OVERLAY_PADDING},
             font,
             OVERLAY_DESC_TEXT_FZ,
@@ -255,7 +255,7 @@ void GameStateManager::renderPauseOverlay(
     window.draw(descOverlay);
 
     sf::Text title = createText(
-        "Pause",
+        PAUSE_TEXT,
         {WINDOW_CENTER_X, OVERLAY_MENU_POS.y + OVERLAY_PADDING},
         font,
         OVERLAY_MENU_TITLE_FZ,
@@ -272,8 +272,8 @@ void GameStateManager::renderPauseOverlay(
 
     // Варианты паузы
     std::vector<std::pair<std::string, PauseOption> > options = {
-        {"Resume", PauseOption::RESUME},
-        {"Main Menu", PauseOption::MAIN_MENU}
+        {RESUME_TEXT, PauseOption::RESUME},
+        {MAIN_MENU_TEXT, PauseOption::MAIN_MENU}
     };
 
     for (size_t i = 0; i < options.size(); ++i) {
@@ -304,7 +304,7 @@ void GameStateManager::renderPauseOverlay(
         buttonBg.setFillColor(fillColor);
         buttonBg.setOutlineColor(OVERLAY_UPGRADE_BTN_BOR_COLOR_SELECTED);
         buttonBg.setOutlineThickness(OVERLAY_UPGRADE_BTN_OUT_THICKNESS);
-        buttonBg.setPosition({pos.x - buttonBg.getSize().x / 2.f, pos.y - buttonBg.getSize().y / 2.f});
+        buttonBg.setPosition({pos.x - buttonBg.getSize().x / HALF_DIVISOR, pos.y - buttonBg.getSize().y / HALF_DIVISOR});
 
         window.draw(buttonBg);
         window.draw(buttonText);
@@ -542,15 +542,15 @@ void GameStateManager::renderGameplayHUD() {
 
         auto hpText = createText(
             std::to_string(static_cast<int>(gameSession->getPlayerHp())),
-            {INFO_HP_POS_X + INFO_PADDING / 2.f + spriteSize, INFO_HP_POS_Y - INFO_FZ / 2.f},
+            {INFO_HP_POS_X + INFO_PADDING / HALF_DIVISOR + spriteSize, INFO_HP_POS_Y - INFO_FZ / HALF_DIVISOR},
             font, INFO_FZ, INFO_TEXT_COLOR,
             sf::Text::Regular, TextOrigin::BOTTOM_LEFT
         );
         window.draw(hpText);
 
         sf::RectangleShape hpBar;
-        float w = spriteSize + hpText.getLocalBounds().size.x + INFO_PADDING * 2.f + INFO_FZ / 2.f;
-        float h = INFO_FZ + INFO_PADDING * 2.f;
+        float w = spriteSize + hpText.getLocalBounds().size.x + INFO_PADDING * HALF_DIVISOR + INFO_FZ / HALF_DIVISOR;
+        float h = INFO_FZ + INFO_PADDING * HALF_DIVISOR;
         hpBar.setPosition({0.f, WINDOW_HEIGHT - h});
         hpBar.setSize({w, h});
         hpBar.setFillColor(sf::Color::Transparent);

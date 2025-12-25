@@ -11,7 +11,7 @@ enum class BossType {
 
 struct Boss final : Component {
     BossType type;
-    int maxHp; // для UI
+    int maxHp;
 
     explicit Boss(BossType t, int hp) : type(t), maxHp(hp) {}
 };

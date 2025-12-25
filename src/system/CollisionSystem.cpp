@@ -74,7 +74,6 @@ CollisionSystem::Result CollisionSystem::update(
 ) const {
     Result result;
 
-    // уничтожения, взаимодействия
     processBulletAsteroidCollisions(bullets, asteroids, result);
     processAsteroidPlayerCollisions(player, asteroids, result);
     processBulletBossCollisions(bullets, boss, result);
@@ -193,8 +192,6 @@ void CollisionSystem::processAsteroidPlayerCollisions(
                     if (playerInvisibility) {
                         playerInvisibility->activate();
                     }
-
-                    // std::cout << "player hit!" << playerHealth->value << std::endl;
                 }
             }
         }
@@ -250,7 +247,7 @@ void CollisionSystem::processTrapLaserPlayerCollisions(
             float playerRadius = std::max(
                                      playerRender->shape.getSize().x,
                                      playerRender->shape.getSize().y
-                                 ) / 2.f;
+                                 ) / HALF_DIVISOR;
 
             for (const auto &laser: trapLasers) {
                 auto *laserComp = laser->getComponent<TrapLaser>();
@@ -271,7 +268,7 @@ void CollisionSystem::processTrapLaserPlayerCollisions(
                 sf::Vector2f end = transform.transformPoint(localEnd);
 
                 float distance = distanceFromPointToSegment(playerCenter, start, end);
-                float laserHalfWidth = laserRender->shape.getSize().x / 2.f;
+                float laserHalfWidth = laserRender->shape.getSize().x / HALF_DIVISOR;
                 float threshold = playerRadius + laserHalfWidth;
 
                 if (distance <= threshold) {
@@ -308,7 +305,7 @@ void CollisionSystem::processPlayerLaserCollisions(
         sf::Vector2f localEnd(0, laserRender->shape.getSize().y);
         sf::Vector2f laserStart = transform.transformPoint(localStart);
         sf::Vector2f laserEnd = transform.transformPoint(localEnd);
-        float laserHalfWidth = laserRender->shape.getSize().x / 2.f;
+        float laserHalfWidth = laserRender->shape.getSize().x / HALF_DIVISOR;
 
         for (auto asteroidIt = asteroids.begin(); asteroidIt != asteroids.end();) {
             auto *asteroidPos = (*asteroidIt)->getComponent<Position>();
@@ -323,7 +320,7 @@ void CollisionSystem::processPlayerLaserCollisions(
                 float asteroidRadius = std::max(
                                            asteroidRender->shape.getSize().x,
                                            asteroidRender->shape.getSize().y
-                                       ) / 2.f;
+                                       ) / HALF_DIVISOR;
 
                 float distance = distanceFromPointToSegment(asteroidCenter, laserStart, laserEnd);
                 if (distance <= asteroidRadius + laserHalfWidth) {
@@ -362,7 +359,7 @@ void CollisionSystem::processPlayerLaserCollisions(
                 float bossRadius = std::max(
                                        bossRender->shape.getSize().x,
                                        bossRender->shape.getSize().y
-                                   ) / 2.f;
+                                   ) / HALF_DIVISOR;
 
                 float distance = distanceFromPointToSegment(bossCenter, laserStart, laserEnd);
                 if (distance <= bossRadius + laserHalfWidth) {
@@ -396,7 +393,7 @@ void CollisionSystem::processPowerUpPickups(
                 continue;
             }
 
-            sf::Vector2f pickupSize(POWER_UP_PICKUP_RADIUS * 2, POWER_UP_PICKUP_RADIUS * 2);
+            sf::Vector2f pickupSize(POWER_UP_PICKUP_RADIUS * HALF_DIVISOR, POWER_UP_PICKUP_RADIUS * HALF_DIVISOR);
             if (isIntersects(playerCenter, pickupPos->value, playerSize, pickupSize)) {
                 result.collectedPowerUps.push_back(pickupType->type);
                 it = powerUpPickups.erase(it);

@@ -262,21 +262,6 @@ void BossBehaviorSystem::update(
                 dt
             );
 
-            if (pattern->timeSinceSpawn - pattern->lastAttackTime >= BOSS_ATTACK_INTERVAL) {
-                pattern->lastAttackTime = pattern->timeSinceSpawn;
-                spawnUpwardAsteroids(
-                    asteroids,
-                    pos->value,
-                    BOSS_ASTEROIDS_TO_BLOW_COUNT,
-                    BOSS_ASTEROIDS_TO_BLOW_SPEED * 2.f,
-                    BOSS_ASTEROIDS_TO_BLOW_COLOR
-                );
-                spawnTrapLasers(
-                    trapLasers,
-                    playerPos
-                );
-            }
-
             break;
         }
 
@@ -333,7 +318,7 @@ void BossBehaviorSystem::update(
                     asteroids,
                     pos->value,
                     BOSS_ASTEROIDS_TO_BLOW_COUNT,
-                    BOSS_ASTEROIDS_TO_BLOW_SPEED * 2.f,
+                    BOSS_ASTEROIDS_TO_BLOW_SPEED * HALF_DIVISOR,
                     BOSS_ASTEROIDS_TO_BLOW_COLOR
                 );
                 spawnTrapLasers(

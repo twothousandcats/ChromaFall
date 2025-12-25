@@ -17,10 +17,16 @@ constexpr float ASTEROID_EDGE_X = 0;
 constexpr float ASTEROID_EDGE_VELOCITY = 80.f;
 constexpr float ASTEROID_LINEAR_ACCELERATION = 50.f;
 constexpr float BASE_SPAWN_INTERVAL = 1.f;
+constexpr float MIN_EDGE_SPAWN_INTERVAL = 0.3f;
 constexpr float INTERVAL_REDUCTION_FACTOR = 0.2f;
 
 // DROP ANGLE
 constexpr float ASTEROID_ANGLE_SPREAD_FACTOR = 0.5f;
+
+// SPLASH
+constexpr int ASTEROID_SPLASH_COUNT = 2;
+constexpr float ASTEROID_SPD_MULT_MIN = 0.8f;
+constexpr float ASTEROID_SPD_MULT_MAX = 1.2f;
 
 constexpr auto ASTEROID_TEXTURE_PATH_SMALL = "assets/images/textures/asteroid_s.png";
 constexpr auto ASTEROID_TEXTURE_PATH_MEDIUM = "assets/images/textures/asteroid_m.png";
