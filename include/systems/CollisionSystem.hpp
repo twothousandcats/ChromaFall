@@ -19,7 +19,6 @@ public:
         std::vector<sf::Vector2f> destroyedAsteroidPositions;
         std::vector<PowerUpType> collectedPowerUps;
         bool isBossHit = false;
-        int expEarned = 0;
     };
 
     Result update(

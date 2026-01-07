@@ -533,6 +533,20 @@ void GameStateManager::renderGameplayHUD() {
         sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
     ));
 
+    // Weapon
+    window.draw(createText(
+        "Current weapon: " + gameSession->getPlayerWeaponName(),
+        INFO_WEAPON_POS, font, INFO_FZ, INFO_TEXT_COLOR,
+        sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
+    ));
+
+    // Last Upgrade
+    window.draw(createText(
+        "Last upgrade: " + gameSession->getLastAppliedPowerUpName(),
+        INFO_UPGRADE_POS, font, INFO_FZ, INFO_TEXT_COLOR,
+        sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
+    ));
+
     // HP
     if (hpSprite) {
         const auto spriteSize = static_cast<float>(hpSprite->getTextureRect().size.y);

@@ -31,17 +31,13 @@ public:
 
     void render(sf::RenderWindow &window);
 
-    void init();
-
     void setOverlayState(OverlayState state);
-
-    void createPlayer();
 
     [[nodiscard]] float getPlayerHp() const;
 
     [[nodiscard]] bool isGameOver() const { return gameOver; }
 
-    // прокидываем UI данные волны
+    // геттеры для UI волны
     [[nodiscard]] int getCurrentWave() const { return waveSystem.getCurrentWave(); }
 
     [[nodiscard]] int getTotalWaves() const {
@@ -72,14 +68,20 @@ public:
 
     void confirmPowerUpSelection();
 
-    // гетеры для UI exp
+    // гетеры для UI
     int getPlayerLevel() const;
 
     int getPlayerCurrentExp() const;
 
     int getPlayerExpForNextLevel() const;
+    std::string getPlayerWeaponName() const;
+    std::string getLastAppliedPowerUpName() const;
 
 private:
+    void init();
+
+    void createPlayer();
+
     void updateBackground(float dt);
 
     void updatePlayerAndWeapon(float dt);
@@ -98,13 +100,11 @@ private:
 
     void handleLevelUpAndPowerUps();
 
-    void updateWorld(float dt);
-
     // сущности
     std::unique_ptr<Entity> player;
     sf::Texture playerTexture; // рендер MC
     // снаряды
-    std::unique_ptr<Entity> playerLaser; // ← переместить из временной переменной сюда
+    std::unique_ptr<Entity> playerLaser;
     std::vector<std::unique_ptr<Entity> > bullets;
     // противники
     std::vector<std::unique_ptr<Entity> > asteroids;
@@ -125,6 +125,7 @@ private:
     ExperienceSystem experienceSystem;
     LaserSystem laserSystem;
     TextureAnimationSystem animationSystem;
+    PowerUpSystem powerUpSystem;
     PowerUpDropSystem powerUpDropSystem;
 
     // общее
@@ -134,7 +135,6 @@ private:
     bool gameOver = false; // state
 
     // powerup
-    PowerUpSystem powerUpSystem;
     bool awaitingPowerUp = false;
     std::vector<PowerUpType> currentPowerUpOptions;
     // для случайных улучшений
@@ -147,6 +147,7 @@ private:
     // PowerUpScreen
     std::vector<PowerUpType> powerUpOptions;
     int selectedPowerUpIndex = 0;
+    std::optional<PowerUpType> lastAppliedPowerUp;
 
     // background
     sf::Texture bgTexture;

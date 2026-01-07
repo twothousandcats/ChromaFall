@@ -1,4 +1,5 @@
 #pragma once
+#include <SFML/Graphics/Color.hpp>
 
 // SIZE
 constexpr float PLAYER_SIDE = 40.f;

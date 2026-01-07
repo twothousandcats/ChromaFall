@@ -77,8 +77,8 @@ constexpr sf::Vector2f OVERLAY_OPTION_BTN_SIZE = {300.f, 60.f};
 
 // info
 constexpr sf::Color INFO_TEXT_COLOR = sf::Color::White;
-constexpr float INFO_PADDING = 20.f;
-constexpr int INFO_FZ = 24;
+constexpr float INFO_PADDING = 15.f;
+constexpr int INFO_FZ = 20;
 
 // hp
 constexpr sf::Vector2f INFO_HP_POS = {INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING};
@@ -92,6 +92,8 @@ constexpr sf::Vector2f INFO_WAVE_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIG
 constexpr sf::Vector2f INFO_WAVE_KILLS_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING * 3.f};
 constexpr sf::Vector2f INFO_LEVEL_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING * 5.f};
 constexpr sf::Vector2f INFO_EXP_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING * 7.f};
+constexpr sf::Vector2f INFO_WEAPON_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING * 9.f};
+constexpr sf::Vector2f INFO_UPGRADE_POS = {WINDOW_WIDTH - INFO_PADDING, WINDOW_HEIGHT - INFO_PADDING * 11.f};
 
 // BASE
 const std::string BASE_FONT_REGULAR = "assets/fonts/Orbitron-Regular.ttf";
@@ -122,4 +124,4 @@ constexpr auto UPGRADE_HINT = "PRESS SPACE TO CONFIRM";
 // pause
 constexpr auto PAUSE_TEXT = "Pause";
 constexpr auto RESUME_TEXT = "Pause";
-constexpr auto MAIN_MENU_TEXT = "Pause";
+constexpr auto MAIN_MENU_TEXT = "Main Menu";

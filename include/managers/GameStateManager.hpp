@@ -8,6 +8,7 @@
 
 #include "../systems/ShootSystem.hpp"
 #include "config/SetupConfig.hpp"
+#include "config/UIConfig.hpp"
 #include "data/TextOrigin.hpp"
 
 enum class TextOrigin;
@@ -30,8 +31,6 @@ public:
     void update();
 
     void render();
-
-    [[nodiscard]] GameState getCurrentState() const { return currentState; }
 
 private:
     void switchToMainMenu();
@@ -61,8 +60,8 @@ private:
         const sf::Vector2f &positionCenter,
         const sf::Font &font,
         unsigned int charSize = 32,
-        const sf::Color &bgColor = sf::Color({0, 204, 109, 255}),
-        const sf::Color &textColor = sf::Color({255, 255, 255, 255})
+        const sf::Color &bgColor = BUTTON_BG_COLOR,
+        const sf::Color &textColor = BUTTON_TEXT_COLOR
     );
 
     void handleMainMenuEvents(const sf::Event &event);

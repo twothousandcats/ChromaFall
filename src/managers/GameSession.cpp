@@ -59,7 +59,9 @@ void GameSession::selectPrevPowerUp() {
 
 void GameSession::confirmPowerUpSelection() {
     if (overlayState == OverlayState::POWER_UP_SELECTION && !powerUpOptions.empty()) {
-        powerUpSystem.apply(player.get(), powerUpOptions[selectedPowerUpIndex]);
+        PowerUpType selected = powerUpOptions[selectedPowerUpIndex];
+        powerUpSystem.apply(player.get(), selected);
+        lastAppliedPowerUp = selected;
         overlayState = OverlayState::NONE;
     }
 }
@@ -220,6 +222,7 @@ void GameSession::processCollisions(float dt) {
     );
     for (PowerUpType type: result.collectedPowerUps) {
         powerUpSystem.apply(player.get(), type);
+        lastAppliedPowerUp = type;
     }
     // todo: резать длину лазера? но определение размеров происходит раньше
 
@@ -266,6 +269,43 @@ void GameSession::processCollisions(float dt) {
     if (result.isPlayerDied) {
         gameOver = true;
     }
+}
+
+std::string GameSession::getPlayerWeaponName() const {
+    WeaponType weapon = WeaponType::BLASTER;
+    if (const auto *updates = player->getComponent<Upgrades>()) {
+        weapon = updates->weapon;
+    }
+
+    switch (weapon) {
+        case WeaponType::BLASTER: return UPGRADE_SELECTOR_BLASTER;
+        case WeaponType::SHOTGUN: return UPGRADE_SELECTOR_SHOTGUN;
+        case WeaponType::LASER: return UPGRADE_SELECTOR_LASER;
+        default: return UPGRADE_SELECTOR_BLASTER;
+    }
+}
+
+std::string GameSession::getLastAppliedPowerUpName() const {
+    if (!lastAppliedPowerUp.has_value()) {
+        return "";
+    }
+
+    static const std::vector<std::string> labels = {
+        UPGRADE_SELECTOR_HP,
+        UPGRADE_SELECTOR_DMG,
+        UPGRADE_SELECTOR_BUL,
+        UPGRADE_SELECTOR_ASPD,
+        UPGRADE_SELECTOR_BLASTER,
+        UPGRADE_SELECTOR_SHOTGUN,
+        UPGRADE_SELECTOR_LASER
+    };
+
+    int index = static_cast<int>(lastAppliedPowerUp.value());
+    if (index >= 0 && index < static_cast<int>(labels.size())) {
+        return labels[index];
+    }
+
+    return "";
 }
 
 int GameSession::getPlayerLevel() const {
