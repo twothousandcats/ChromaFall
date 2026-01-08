@@ -13,7 +13,7 @@
 
 enum class TextOrigin;
 class Entity;
-class GameSession;
+class GameSessionManager;
 
 enum class PauseOption { RESUME, MAIN_MENU };
 
@@ -104,7 +104,7 @@ private:
     // UI pause
     PauseOption selectedPauseOption = PauseOption::RESUME;
 
-    std::unique_ptr<GameSession> gameSession;
+    std::unique_ptr<GameSessionManager> gameSessionManager;
     sf::Clock gameClock;
     sf::Clock infoClock;
     sf::Clock blinkClock;

@@ -111,13 +111,15 @@ constexpr auto UPGRADE_DESC_BLASTER = "Unlocks Blaster";
 constexpr auto UPGRADE_DESC_SHOTGUN = "Unlocks shotgun";
 constexpr auto UPGRADE_DESC_LASER = "Unlocks laser";
 // selectors
-constexpr auto UPGRADE_SELECTOR_HP = "+HP";
-constexpr auto UPGRADE_SELECTOR_DMG = "+DMG";
-constexpr auto UPGRADE_SELECTOR_BUL = "+BLT";
-constexpr auto UPGRADE_SELECTOR_ASPD = "+ASPD";
+constexpr auto UPGRADE_SELECTOR_HP = "HP";
+constexpr auto UPGRADE_SELECTOR_DMG = "DMG";
+constexpr auto UPGRADE_SELECTOR_BUL = "BLT";
+constexpr auto UPGRADE_SELECTOR_ASPD = "ASPD";
 constexpr auto UPGRADE_SELECTOR_BLASTER = "Blaster";
 constexpr auto UPGRADE_SELECTOR_SHOTGUN = "Shotgun";
 constexpr auto UPGRADE_SELECTOR_LASER = "Laser";
+constexpr auto UPGRADE_DEFAULT = "None";
+
 // hint
 constexpr auto UPGRADE_HINT = "PRESS SPACE TO CONFIRM";
 

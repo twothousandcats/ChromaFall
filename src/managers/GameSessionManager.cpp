@@ -1,13 +1,12 @@
 #include "iostream"
 
-#include "../../include/managers/GameSession.hpp"
-
+#include "managers/GameSessionManager.hpp"
+#include "managers/AudioManager.hpp"
 #include "components/Experience.hpp"
 #include "systems/CollisionSystem.hpp"
 #include "systems/EntityCleanupSystem.hpp"
 #include "systems/PlayerControlSystem.hpp"
 #include "systems/RenderSystem.hpp"
-
 #include "components/Health.hpp"
 #include "components/Invincibility.hpp"
 #include "components/Level.hpp"
@@ -17,16 +16,14 @@
 #include "components/TrapLaser.hpp"
 #include "components/Upgrades.hpp"
 #include "config/LevelConfig.hpp"
-
 #include "config/PlayerConfig.hpp"
 #include "config/UIConfig.hpp"
-#include "managers/AudioManager.hpp"
 #include "systems/BossBehaviorSystem.hpp"
 #include "systems/BossSystem.hpp"
 #include "systems/InvincibilitySystem.hpp"
 #include "systems/PowerUpDropSystem.hpp"
 
-float GameSession::getPlayerHp() const {
+float GameSessionManager::getPlayerHp() const {
     if (const auto *playerHp = player->getComponent<Health>()) {
         return playerHp->value;
     }
@@ -34,7 +31,7 @@ float GameSession::getPlayerHp() const {
     return 0.f;
 }
 
-void GameSession::setOverlayState(OverlayState state) {
+void GameSessionManager::setOverlayState(OverlayState state) {
     if (state == OverlayState::PAUSE && overlayState == OverlayState::POWER_UP_SELECTION) {
         wasInPowerUp = true;
     } else if (state == OverlayState::NONE && wasInPowerUp) {
@@ -45,19 +42,19 @@ void GameSession::setOverlayState(OverlayState state) {
     overlayState = state;
 }
 
-void GameSession::selectNextPowerUp() {
+void GameSessionManager::selectNextPowerUp() {
     if (overlayState == OverlayState::POWER_UP_SELECTION && !powerUpOptions.empty()) {
         selectedPowerUpIndex = (selectedPowerUpIndex + 1) % powerUpOptions.size();
     }
 }
 
-void GameSession::selectPrevPowerUp() {
+void GameSessionManager::selectPrevPowerUp() {
     if (overlayState == OverlayState::POWER_UP_SELECTION && !powerUpOptions.empty()) {
         selectedPowerUpIndex = (selectedPowerUpIndex + powerUpOptions.size() - 1) % powerUpOptions.size();
     }
 }
 
-void GameSession::confirmPowerUpSelection() {
+void GameSessionManager::confirmPowerUpSelection() {
     if (overlayState == OverlayState::POWER_UP_SELECTION && !powerUpOptions.empty()) {
         PowerUpType selected = powerUpOptions[selectedPowerUpIndex];
         powerUpSystem.apply(player.get(), selected);
@@ -66,7 +63,10 @@ void GameSession::confirmPowerUpSelection() {
     }
 }
 
-void GameSession::updateLaserWeapon(Position *playerPos, Upgrades *upgrades) {
+void GameSessionManager::updateLaserWeapon(
+    Position *playerPos,
+    Upgrades *upgrades
+) {
     bool isShooting = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
     float muzzleX = playerPos->value.x - LASER_WIDTH / HALF_DIVISOR;
     float muzzleY = playerPos->value.y - PLAYER_SIDE / HALF_DIVISOR;
@@ -84,7 +84,7 @@ void GameSession::updateLaserWeapon(Position *playerPos, Upgrades *upgrades) {
     );
 }
 
-void GameSession::updateBulletWeapon(
+void GameSessionManager::updateBulletWeapon(
     Position *playerPos,
     Upgrades *upgrades
 ) {
@@ -117,12 +117,12 @@ void GameSession::updateBulletWeapon(
     );
 }
 
-void GameSession::updateBackground(float dt) {
+void GameSessionManager::updateBackground(float dt) {
     currentScrollOffset += WINDOW_SCROLL_SPEED * dt;
     currentScrollOffset = std::fmod(currentScrollOffset, actualBgHeight);
 }
 
-void GameSession::updatePlayerAndWeapon(float dt) {
+void GameSessionManager::updatePlayerAndWeapon(float dt) {
     InvincibilitySystem::update(player.get(), dt);
     PlayerControlSystem::update(*player, window);
 
@@ -143,7 +143,7 @@ void GameSession::updatePlayerAndWeapon(float dt) {
     }
 }
 
-void GameSession::updateEntities(float dt) {
+void GameSessionManager::updateEntities(float dt) {
     movementSystem.update(bullets, dt);
     animationSystem.update(bullets, dt);
     movementSystem.update(asteroids, dt);
@@ -156,7 +156,7 @@ void GameSession::updateEntities(float dt) {
     }
 }
 
-void GameSession::updateAsteroidSpawning() {
+void GameSessionManager::updateAsteroidSpawning() {
     if (waveSystem.shouldSpawnAsteroids()) {
         asteroidSpawnSystem.update(
             asteroids,
@@ -165,7 +165,7 @@ void GameSession::updateAsteroidSpawning() {
     }
 }
 
-void GameSession::updateBossAndTraps(float dt) {
+void GameSessionManager::updateBossAndTraps(float dt) {
     auto *playerPosition = player ? player->getComponent<Position>() : nullptr;
     if (!playerPosition) return;
 
@@ -198,7 +198,7 @@ void GameSession::updateBossAndTraps(float dt) {
     }
 }
 
-void GameSession::handleLevelUpAndPowerUps() {
+void GameSessionManager::handleLevelUpAndPowerUps() {
     if (experienceSystem.processLevelUps(player.get())) {
         AudioManager::getInstance().playSound(AUDIO_SFX_LVLUP_NAME);
         overlayState = OverlayState::POWER_UP_SELECTION;
@@ -209,7 +209,7 @@ void GameSession::handleLevelUpAndPowerUps() {
     }
 }
 
-void GameSession::processCollisions(float dt) {
+void GameSessionManager::processCollisions(float dt) {
     Entity *laserPtr = playerLaser ? playerLaser.get() : nullptr;
     auto result = collisionSystem.update(
         *player,
@@ -271,7 +271,7 @@ void GameSession::processCollisions(float dt) {
     }
 }
 
-std::string GameSession::getPlayerWeaponName() const {
+std::string GameSessionManager::getPlayerWeaponName() const {
     WeaponType weapon = WeaponType::BLASTER;
     if (const auto *updates = player->getComponent<Upgrades>()) {
         weapon = updates->weapon;
@@ -285,9 +285,9 @@ std::string GameSession::getPlayerWeaponName() const {
     }
 }
 
-std::string GameSession::getLastAppliedPowerUpName() const {
+std::string GameSessionManager::getLastAppliedPowerUpName() const {
     if (!lastAppliedPowerUp.has_value()) {
-        return "";
+        return UPGRADE_DEFAULT;
     }
 
     static const std::vector<std::string> labels = {
@@ -308,7 +308,7 @@ std::string GameSession::getLastAppliedPowerUpName() const {
     return "";
 }
 
-int GameSession::getPlayerLevel() const {
+int GameSessionManager::getPlayerLevel() const {
     if (const auto *lvl = player->getComponent<Level>()) {
         return lvl->value;
     }
@@ -316,7 +316,7 @@ int GameSession::getPlayerLevel() const {
     return LEVEL_BASE;
 }
 
-int GameSession::getPlayerCurrentExp() const {
+int GameSessionManager::getPlayerCurrentExp() const {
     if (const auto *exp = player->getComponent<Experience>()) {
         return exp->value;
     }
@@ -324,7 +324,7 @@ int GameSession::getPlayerCurrentExp() const {
     return LEVEL_START_EXP;
 }
 
-int GameSession::getPlayerExpForNextLevel() const {
+int GameSessionManager::getPlayerExpForNextLevel() const {
     if (const auto *exp = player->getComponent<Experience>()) {
         return static_cast<int>(exp->neededValue);
     }
@@ -332,7 +332,7 @@ int GameSession::getPlayerExpForNextLevel() const {
     return LEVEL_BASE_NEEDED_COUNT_EXP;
 }
 
-void GameSession::createPlayer() {
+void GameSessionManager::createPlayer() {
     if (!playerTexture.loadFromFile(PLAYER_TEXTURE)) {
         exit(1);
     }
@@ -348,7 +348,7 @@ void GameSession::createPlayer() {
     player->addComponent(std::make_unique<Upgrades>());
 }
 
-GameSession::GameSession(sf::RenderWindow &window) : window(window) {
+GameSessionManager::GameSessionManager(sf::RenderWindow &window) : window(window) {
     init();
 
     if (bgTexture.loadFromFile(BASE_BACKGROUND)) {
@@ -364,7 +364,7 @@ GameSession::GameSession(sf::RenderWindow &window) : window(window) {
     }
 }
 
-void GameSession::init() {
+void GameSessionManager::init() {
     createPlayer();
 
     bullets.clear();
@@ -374,7 +374,7 @@ void GameSession::init() {
     droppedPowerUpRng.seed(std::random_device{}());
 }
 
-void GameSession::update(
+void GameSessionManager::update(
     const float dt
 ) {
     // конец игры/lvlup/pause
@@ -390,7 +390,7 @@ void GameSession::update(
     processCollisions(dt);
 }
 
-void GameSession::render(
+void GameSessionManager::render(
     sf::RenderWindow &window
 ) {
     if (bgSprite.has_value()) {

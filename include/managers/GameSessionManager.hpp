@@ -23,9 +23,9 @@
 enum class PowerUpType;
 enum class OverlayState;
 
-class GameSession {
+class GameSessionManager {
 public:
-    explicit GameSession(sf::RenderWindow &window);
+    explicit GameSessionManager(sf::RenderWindow &window);
 
     void update(float dt);
 

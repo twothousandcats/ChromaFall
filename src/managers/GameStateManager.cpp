@@ -14,7 +14,7 @@
 #include "data/AsteroidTemplate.hpp"
 #include "data/TextOrigin.hpp"
 #include "managers/AudioManager.hpp"
-#include "managers/GameSession.hpp"
+#include "managers/GameSessionManager.hpp"
 
 GameStateManager::GameStateManager(sf::RenderWindow &window)
     : window(window), currentState(GameState::MainMenu) {
@@ -155,8 +155,8 @@ std::pair<sf::RectangleShape, sf::Text> GameStateManager::createButton(
 void GameStateManager::renderPowerUpOverlay(
     sf::RenderWindow &window
 ) {
-    const auto &options = gameSession->getPowerUpOptions();
-    int selectedIndex = gameSession->getSelectedPowerUpIndex();
+    const auto &options = gameSessionManager->getPowerUpOptions();
+    int selectedIndex = gameSessionManager->getSelectedPowerUpIndex();
 
     // Описания
     const std::vector<std::string> descriptions = {
@@ -313,7 +313,7 @@ void GameStateManager::renderPauseOverlay(
 
 void GameStateManager::switchToMainMenu() {
     currentState = GameState::MainMenu;
-    gameSession.reset(); // отчистка
+    gameSessionManager.reset(); // отчистка
 
     if (isGameMusicPlaying) {
         AudioManager::getInstance().stopMusic();
@@ -328,7 +328,7 @@ void GameStateManager::switchToMainMenu() {
 
 void GameStateManager::switchToGameplay() {
     currentState = GameState::Gameplay;
-    gameSession = std::make_unique<GameSession>(window);
+    gameSessionManager = std::make_unique<GameSessionManager>(window);
 
     if (isThemeMusicPlaying) {
         AudioManager::getInstance().stopMusic();
@@ -372,13 +372,13 @@ void GameStateManager::handleMainMenuEvents(const sf::Event &event) {
 
 void GameStateManager::handlePowerUpSelectionInput(sf::Keyboard::Key key) {
     if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A) {
-        gameSession->selectPrevPowerUp();
+        gameSessionManager->selectPrevPowerUp();
         AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_UPGRADE_NAME);
     } else if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D) {
-        gameSession->selectNextPowerUp();
+        gameSessionManager->selectNextPowerUp();
         AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_UPGRADE_NAME);
     } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
-        gameSession->confirmPowerUpSelection();
+        gameSessionManager->confirmPowerUpSelection();
     }
 }
 
@@ -391,7 +391,7 @@ void GameStateManager::handlePauseMenuInput(sf::Keyboard::Key key) {
         AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
     } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
         if (selectedPauseOption == PauseOption::RESUME) {
-            gameSession->setOverlayState(OverlayState::NONE);
+            gameSessionManager->setOverlayState(OverlayState::NONE);
             AudioManager::getInstance().resumeMusic();
         } else {
             switchToMainMenu();
@@ -400,19 +400,19 @@ void GameStateManager::handlePauseMenuInput(sf::Keyboard::Key key) {
 }
 
 void GameStateManager::handleGameplayEvents(const sf::Event &event) {
-    if (!gameSession) return;
+    if (!gameSessionManager) return;
 
-    auto overlay = gameSession->getOverlayState();
+    auto overlay = gameSessionManager->getOverlayState();
 
     if (event.is<sf::Event::KeyPressed>()) {
         const auto &key = event.getIf<sf::Event::KeyPressed>()->code;
 
         if (key == sf::Keyboard::Key::Escape) {
             if (overlay == OverlayState::PAUSE) {
-                gameSession->setOverlayState(OverlayState::NONE);
+                gameSessionManager->setOverlayState(OverlayState::NONE);
                 AudioManager::getInstance().resumeMusic();
             } else {
-                gameSession->setOverlayState(OverlayState::PAUSE);
+                gameSessionManager->setOverlayState(OverlayState::PAUSE);
                 selectedPauseOption = PauseOption::RESUME;
                 AudioManager::getInstance().pauseMusic();
             }
@@ -447,13 +447,13 @@ void GameStateManager::handleEvents() {
 }
 
 void GameStateManager::updateGameplay(float deltaTime) {
-    if (!gameSession) return;
-    gameSession->update(deltaTime);
+    if (!gameSessionManager) return;
+    gameSessionManager->update(deltaTime);
 
-    if (gameSession->isGameOver()) {
+    if (gameSessionManager->isGameOver()) {
         currentState = GameState::GameOver;
         infoClock.restart();
-    } else if (gameSession->isVictory()) {
+    } else if (gameSessionManager->isVictory()) {
         currentState = GameState::Victory;
         infoClock.restart();
     }
@@ -494,9 +494,9 @@ void GameStateManager::renderMainMenu() {
 }
 
 void GameStateManager::renderGameplay() {
-    if (!gameSession) return;
+    if (!gameSessionManager) return;
 
-    gameSession->render(window);
+    gameSessionManager->render(window);
     renderGameplayHUD();
     renderGameplayOverlays();
 }
@@ -504,45 +504,45 @@ void GameStateManager::renderGameplay() {
 void GameStateManager::renderGameplayHUD() {
     // Wave
     window.draw(createText(
-        "Wave: " + std::to_string(gameSession->getCurrentWave()) + " / " +
-        std::to_string(gameSession->getTotalWaves()),
+        "Wave: " + std::to_string(gameSessionManager->getCurrentWave()) + " / " +
+        std::to_string(gameSessionManager->getTotalWaves()),
         INFO_WAVE_POS, font, INFO_FZ, INFO_TEXT_COLOR,
         sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
     ));
 
     // Kills
     window.draw(createText(
-        "Kills: " + std::to_string(gameSession->getCurrentWaveKilledCount()) + " / " +
-        std::to_string(gameSession->getCurrentWaveTotalCount()),
+        "Kills: " + std::to_string(gameSessionManager->getCurrentWaveKilledCount()) + " / " +
+        std::to_string(gameSessionManager->getCurrentWaveTotalCount()),
         INFO_WAVE_KILLS_POS, font, INFO_FZ, INFO_TEXT_COLOR,
         sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
     ));
 
     // Level
     window.draw(createText(
-        "Lvl: " + std::to_string(gameSession->getPlayerLevel()),
+        "Lvl: " + std::to_string(gameSessionManager->getPlayerLevel()),
         INFO_LEVEL_POS, font, INFO_FZ, INFO_TEXT_COLOR,
         sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
     ));
 
     // XP
     window.draw(createText(
-        "XP: " + std::to_string(gameSession->getPlayerCurrentExp()) + " / " +
-        std::to_string(gameSession->getPlayerExpForNextLevel()),
+        "XP: " + std::to_string(gameSessionManager->getPlayerCurrentExp()) + " / " +
+        std::to_string(gameSessionManager->getPlayerExpForNextLevel()),
         INFO_EXP_POS, font, INFO_FZ, INFO_TEXT_COLOR,
         sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
     ));
 
     // Weapon
     window.draw(createText(
-        "Current weapon: " + gameSession->getPlayerWeaponName(),
+        "Current weapon: " + gameSessionManager->getPlayerWeaponName(),
         INFO_WEAPON_POS, font, INFO_FZ, INFO_TEXT_COLOR,
         sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
     ));
 
     // Last Upgrade
     window.draw(createText(
-        "Last upgrade: " + gameSession->getLastAppliedPowerUpName(),
+        "Last upgrade: " + gameSessionManager->getLastAppliedPowerUpName(),
         INFO_UPGRADE_POS, font, INFO_FZ, INFO_TEXT_COLOR,
         sf::Text::Regular, TextOrigin::BOTTOM_RIGHT
     ));
@@ -555,7 +555,7 @@ void GameStateManager::renderGameplayHUD() {
         window.draw(*hpSprite);
 
         auto hpText = createText(
-            std::to_string(static_cast<int>(gameSession->getPlayerHp())),
+            std::to_string(static_cast<int>(gameSessionManager->getPlayerHp())),
             {INFO_HP_POS_X + INFO_PADDING / HALF_DIVISOR + spriteSize, INFO_HP_POS_Y - INFO_FZ / HALF_DIVISOR},
             font, INFO_FZ, INFO_TEXT_COLOR,
             sf::Text::Regular, TextOrigin::BOTTOM_LEFT
@@ -575,7 +575,7 @@ void GameStateManager::renderGameplayHUD() {
 }
 
 void GameStateManager::renderGameplayOverlays() {
-    if (!gameSession || gameSession->getOverlayState() == OverlayState::NONE) {
+    if (!gameSessionManager || gameSessionManager->getOverlayState() == OverlayState::NONE) {
         return;
     }
 
@@ -583,7 +583,7 @@ void GameStateManager::renderGameplayOverlays() {
     overlayBg.setFillColor(OVERLAY_BGC);
     window.draw(overlayBg);
 
-    switch (gameSession->getOverlayState()) {
+    switch (gameSessionManager->getOverlayState()) {
         case OverlayState::POWER_UP_SELECTION:
             renderPowerUpOverlay(window);
             break;
