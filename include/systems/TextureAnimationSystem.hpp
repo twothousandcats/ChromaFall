@@ -7,13 +7,13 @@ class Entity;
 
 class TextureAnimationSystem {
 public:
-    // для наборов
+    // набор
     void update(
         std::vector<std::unique_ptr<Entity> > &entities,
         float deltaTime
     );
 
-    // для единичного
+    // ед
     void update(
         Entity &entity,
         float deltaTime

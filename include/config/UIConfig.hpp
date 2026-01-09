@@ -19,6 +19,7 @@ constexpr float BUTTONS_Y_GAP = BASE_GAP + BUTTON_HEIGHT;
 
 // colors
 constexpr sf::Color BUTTON_BG_COLOR = {0, 204, 109, 255};
+constexpr sf::Color BUTTON_BG_COLOR_TRANSPARENT = {0, 204, 109, 0};
 constexpr sf::Color BUTTON_TEXT_COLOR = {255, 255, 255, 255};
 
 // typograph

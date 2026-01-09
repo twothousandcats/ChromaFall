@@ -16,16 +16,11 @@ public:
         }
     }
 
-    static void update(
-    ) {
-    }
-
     static void render(
         sf::RenderWindow &window,
         const std::vector<Entity *> &entities
     );
 
-    // перегрузочный метод
     static void render(
         sf::RenderWindow &window,
         const std::vector<std::unique_ptr<Entity> > &entities

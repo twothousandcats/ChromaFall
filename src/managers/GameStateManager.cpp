@@ -42,7 +42,7 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
         WINDOW_CENTER,
         font,
         BUTTON_FONT_SIZE,
-        BUTTON_BG_COLOR,
+        BUTTON_BG_COLOR_TRANSPARENT, // BUTTON_BG_COLOR
         BUTTON_TEXT_COLOR
     );
     startButton = std::move(startBg);
@@ -53,7 +53,7 @@ GameStateManager::GameStateManager(sf::RenderWindow &window)
         {WINDOW_CENTER_X, WINDOW_HEIGHT / HALF_DIVISOR + BUTTONS_Y_GAP},
         font,
         BUTTON_FONT_SIZE,
-        BUTTON_BG_COLOR,
+        BUTTON_BG_COLOR_TRANSPARENT, // BUTTON_BG_COLOR
         BUTTON_TEXT_COLOR
     );
     exitButton = std::move(exitBg);
@@ -304,7 +304,9 @@ void GameStateManager::renderPauseOverlay(
         buttonBg.setFillColor(fillColor);
         buttonBg.setOutlineColor(OVERLAY_UPGRADE_BTN_BOR_COLOR_SELECTED);
         buttonBg.setOutlineThickness(OVERLAY_UPGRADE_BTN_OUT_THICKNESS);
-        buttonBg.setPosition({pos.x - buttonBg.getSize().x / HALF_DIVISOR, pos.y - buttonBg.getSize().y / HALF_DIVISOR});
+        buttonBg.setPosition({
+            pos.x - buttonBg.getSize().x / HALF_DIVISOR, pos.y - buttonBg.getSize().y / HALF_DIVISOR
+        });
 
         window.draw(buttonBg);
         window.draw(buttonText);
@@ -350,22 +352,46 @@ void GameStateManager::switchToGameplay() {
 }
 
 void GameStateManager::handleMainMenuEvents(const sf::Event &event) {
-    if (event.is<sf::Event::MouseButtonPressed>()) {
-        const auto &mouseEv = *event.getIf<sf::Event::MouseButtonPressed>();
-        if (mouseEv.button == sf::Mouse::Button::Left) {
-            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-            if (startButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
-                AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
+    if (event.is<sf::Event::KeyPressed>()) {
+        const auto &keyEv = *event.getIf<sf::Event::KeyPressed>();
+        auto key = keyEv.code;
+
+        if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S) {
+            selectedMainMenuOption = MainMenuOption::EXIT;
+            AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
+        } else if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W) {
+            selectedMainMenuOption = MainMenuOption::START;
+            AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
+        } else if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter) {
+            AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
+            if (selectedMainMenuOption == MainMenuOption::START) {
                 switchToGameplay();
-            } else if (exitButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+            } else {
                 window.close();
             }
         }
-    } else if (event.is<sf::Event::KeyPressed>()) {
-        const auto &keyEv = *event.getIf<sf::Event::KeyPressed>();
-        if (keyEv.code == sf::Keyboard::Key::Space) {
-            AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
-            switchToGameplay();
+    } else if (event.is<sf::Event::MouseButtonPressed>()) {
+        const auto &mouseEv = *event.getIf<sf::Event::MouseButtonPressed>();
+        if (mouseEv.button == sf::Mouse::Button::Left) {
+            sf::Vector2f mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
+
+            if (startButton.getGlobalBounds().contains(mousePos)) {
+                selectedMainMenuOption = MainMenuOption::START;
+                AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
+                switchToGameplay();
+            } else if (exitButton.getGlobalBounds().contains(mousePos)) {
+                selectedMainMenuOption = MainMenuOption::EXIT;
+                AudioManager::getInstance().playSound(AUDIO_SFX_SELECT_BUTTON_NAME);
+                window.close();
+            }
+        }
+    } else if (event.is<sf::Event::MouseMoved>()) {
+        // Hover
+        sf::Vector2f mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
+        if (startButton.getGlobalBounds().contains(mousePos)) {
+            selectedMainMenuOption = MainMenuOption::START;
+        } else if (exitButton.getGlobalBounds().contains(mousePos)) {
+            selectedMainMenuOption = MainMenuOption::EXIT;
         }
     }
 }
@@ -442,6 +468,8 @@ void GameStateManager::handleEvents() {
             case GameState::Gameplay:
                 handleGameplayEvents(*event);
                 break;
+            default:
+                handleMainMenuEvents(*event);
         }
     }
 }
@@ -486,11 +514,43 @@ void GameStateManager::update() {
 }
 
 void GameStateManager::renderMainMenu() {
-    if (titleText) window.draw(*titleText);
+    if (titleText) {
+        window.draw(*titleText);
+    }
+
+    // Цвета
+    sf::Color startBgColor = (selectedMainMenuOption == MainMenuOption::START)
+                                 ? OVERLAY_UPGRADE_BTN_BOR_COLOR_SELECTED
+                                 : BUTTON_BG_COLOR;
+    sf::Color exitBgColor = (selectedMainMenuOption == MainMenuOption::EXIT)
+                                ? OVERLAY_UPGRADE_BTN_BOR_COLOR_SELECTED
+                                : BUTTON_BG_COLOR;
+
+    // Обновляем цвет фона кнопок
+    startButton.setOutlineColor(BUTTON_BG_COLOR);
+    startButton.setOutlineThickness(OVERLAY_UPGRADE_BTN_OUT_THICKNESS);
+    startButton.setFillColor(
+        selectedMainMenuOption == MainMenuOption::START
+            ? BUTTON_BG_COLOR
+            : sf::Color::Transparent
+    );
+
+    exitButton.setOutlineColor(BUTTON_BG_COLOR);
+    exitButton.setOutlineThickness(OVERLAY_UPGRADE_BTN_OUT_THICKNESS);
+    exitButton.setFillColor(
+        selectedMainMenuOption == MainMenuOption::EXIT
+            ? BUTTON_BG_COLOR
+            : sf::Color::Transparent
+    );
+
     window.draw(startButton);
-    if (startText) window.draw(*startText);
+    if (startText) {
+        window.draw(*startText);
+    }
     window.draw(exitButton);
-    if (exitText) window.draw(*exitText);
+    if (exitText) {
+        window.draw(*exitText);
+    }
 }
 
 void GameStateManager::renderGameplay() {

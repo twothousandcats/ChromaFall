@@ -17,6 +17,8 @@ class GameSessionManager;
 
 enum class PauseOption { RESUME, MAIN_MENU };
 
+enum class MainMenuOption { START, EXIT };
+
 /**
  * Система управления состояниями программы
  */
@@ -103,6 +105,7 @@ private:
 
     // UI pause
     PauseOption selectedPauseOption = PauseOption::RESUME;
+    MainMenuOption selectedMainMenuOption = MainMenuOption::START;
 
     std::unique_ptr<GameSessionManager> gameSessionManager;
     sf::Clock gameClock;

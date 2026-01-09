@@ -9,9 +9,15 @@ enum class WavePhase {
 
 class WaveSystem {
 public:
-    explicit WaveSystem(int totalWaves, int baseKillsPerWave);
+    explicit WaveSystem(
+        int totalWaves,
+        int baseKillsPerWave
+    );
 
-    void update(int asteroidsDestroyedThisFrame, float deltaTime);
+    void update(
+        int asteroidsDestroyedThisFrame,
+        float deltaTime
+    );
 
     void onBossDefeated() {
         phase = WavePhase::COOLDOWN;

@@ -3,7 +3,6 @@
 
 #include "config/AsteroidConfig.hpp"
 
-
 const std::vector<AsteroidTemplate> &getAsteroidTemplates() {
     static std::vector<AsteroidTemplate> templates = {
         {

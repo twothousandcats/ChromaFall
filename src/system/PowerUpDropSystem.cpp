@@ -28,7 +28,7 @@ void PowerUpDropSystem::textureFallback(
                 anim->frameHeight
             }
         });
-        // сброс цвета текстуры
+
         shape->shape.setFillColor(sf::Color::White);
     }
 }
